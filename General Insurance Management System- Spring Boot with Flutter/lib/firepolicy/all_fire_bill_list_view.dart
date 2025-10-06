@@ -53,7 +53,7 @@ class _AllFireBillListViewState extends State<AllFireBillListView> {
         itemBuilder: (context, index) {
           final bill = bills[index];
           return ListTile(
-            title: Text(bill.policy?.policyholder ?? 'No Name'),
+            title: Text(bill.firePolicy?.policyholder ?? 'No Name'),
             subtitle: Text('Net Premium: ${bill.netPremium}'),
             trailing: const Icon(Icons.arrow_forward),
             onTap: () {

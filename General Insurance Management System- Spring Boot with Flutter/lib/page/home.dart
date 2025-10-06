@@ -163,7 +163,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       flexibleSpace: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.green, Colors.blue, Colors.lightGreen, Colors.teal],
+            colors: [Colors.purple, Colors.blue, Colors.lightGreen, Colors.teal, Colors.purple],
           ),
         ),
       ),
@@ -171,7 +171,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         builder: (context) => IconButton(
           icon: CircleAvatar(
             backgroundImage: NetworkImage(
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQntUidjT9ib73xOZ_LYOvhZg9bSvlU9hOGjaWbTALttUeqeEjJUWKJHbT4r1UqjFM3caQ&usqp=CAU',
+              'https://cdn.b12.io/client_media/5KgiSduG/bac4acae-1a8f-11ed-add6-0242ac110003-png-regular_image.png',
             ),
           ),
           onPressed: () {
@@ -191,7 +191,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           DrawerHeader(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blueAccent, Colors.greenAccent, Colors.orangeAccent],
+                colors: [Colors.blueAccent, Colors.greenAccent, Colors.orangeAccent, Colors.purpleAccent],
               ),
             ),
             child: Column(

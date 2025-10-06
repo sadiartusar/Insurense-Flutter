@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/firepolicy/all_fire_bill_list_view.dart';
 import 'package:general_insurance_management_system/firepolicy/view_fire_bill.dart';
+import 'package:general_insurance_management_system/firepolicy/view_fire_money_receipt.dart';
 import 'package:general_insurance_management_system/firepolicy/view_firepolicy.dart';
 import 'package:general_insurance_management_system/page/home.dart';
 import 'package:general_insurance_management_system/page/login.dart';
@@ -32,7 +33,7 @@ class MyApp extends StatefulWidget {
         // '/registration': (context) => Registration(),
         '/viewfirepolicy': (context) => AllFirePolicyView(),
         '/viewfirebill': (context) => AllFireBillView(),
-        // '/viewfiremoneyreceipt': (context) => AllFireMoneyReceiptView(),
+         '/viewfiremoneyreceipt': (context) => AllFireMoneyReceiptView(),
         // '/viewmarinepolicy': (context) => AllMarinePolicyView(),
         // '/viewmarinebill': (context) => AllMarineBillView(),
         // '/viewmarinemoneyreceipt': (context) => AllMarineMoneyReceiptView(),

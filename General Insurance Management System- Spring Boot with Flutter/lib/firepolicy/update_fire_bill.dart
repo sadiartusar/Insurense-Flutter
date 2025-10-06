@@ -47,9 +47,9 @@ class _UpdateFireBillState extends State<UpdateFireBill> {
     netPremiumController.text = widget.bill.netPremium.toString();
     taxController.text = widget.bill.tax.toString();
     grossPremiumController.text = widget.bill.grossPremium.toString();
-    selectedPolicyholder = widget.bill.policy.policyholder;
-    selectedBankName = widget.bill.policy.bankName;
-    selectedSumInsured = widget.bill.policy.sumInsured;
+    selectedPolicyholder = widget.bill.firePolicy.policyholder;
+    selectedBankName = widget.bill.firePolicy.bankName;
+    selectedSumInsured = widget.bill.firePolicy.sumInsured;
   }
 
   Future<void> _fetchData() async {
@@ -117,7 +117,7 @@ class _UpdateFireBillState extends State<UpdateFireBill> {
             netPremium: double.parse(netPremiumController.text),
             tax: double.parse(taxController.text),
             grossPremium: double.parse(grossPremiumController.text),
-            policy: selectedPolicy,
+            firePolicy: selectedPolicy,
           ),
         );
 

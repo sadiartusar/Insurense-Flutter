@@ -70,7 +70,7 @@ class AllFireBillDetails extends StatelessWidget {
         pw.SizedBox(height: 10),
         pw.Table.fromTextArray(
           data: [
-            ['Fire Bill No', '${bill.policy.id ?? "N/A"}', 'Issue Date', '${formatDate(bill.policy.date)}'],
+            ['Fire Bill No', '${bill.firePolicy.id ?? "N/A"}', 'Issue Date', '${formatDate(bill.firePolicy.date)}'],
           ],
         ),
       ],
@@ -84,9 +84,9 @@ class AllFireBillDetails extends StatelessWidget {
         pw.Text("Insured Details", style: _headerTextStyle()),
         pw.Table.fromTextArray(
           data: [
-            ['Bank Name', '${bill.policy.bankName ?? "N/A"}'],
-            ['Policyholder', '${bill.policy.policyholder ?? "N/A"}'],
-            ['Address', '${bill.policy.address ?? "N/A"}'],
+            ['Bank Name', '${bill.firePolicy.bankName ?? "N/A"}'],
+            ['Policyholder', '${bill.firePolicy.policyholder ?? "N/A"}'],
+            ['Address', '${bill.firePolicy.address ?? "N/A"}'],
           ],
         ),
       ],
@@ -100,8 +100,8 @@ class AllFireBillDetails extends StatelessWidget {
         pw.Text("Segregation of The Sum Insured", style: _headerTextStyle()),
         pw.Table.fromTextArray(
           data: [
-            ['Stock Insured', '${bill.policy.stockInsured ?? "N/A"}'],
-            ['Sum Insured', 'TK. ${bill.policy.sumInsured ?? "N/A"}'],
+            ['Stock Insured', '${bill.firePolicy.stockInsured ?? "N/A"}'],
+            ['Sum Insured', 'TK. ${bill.firePolicy.sumInsured ?? "N/A"}'],
           ],
         ),
       ],
@@ -115,14 +115,14 @@ class AllFireBillDetails extends StatelessWidget {
         pw.Text("Situation", style: _headerTextStyle()),
         pw.Table.fromTextArray(
           data: [
-            ['Interest Insured', '${bill.policy.interestInsured ?? "N/A"}'],
-            ['Coverage', '${bill.policy.coverage ?? "N/A"}'],
-            ['Location', '${bill.policy.location ?? "N/A"}'],
-            ['Construction', '${bill.policy.construction ?? "N/A"}'],
-            ['Owner', '${bill.policy.owner ?? "N/A"}'],
-            ['Used As', '${bill.policy.usedAs ?? "N/A"}'],
-            ['Period From', '${formatDate(bill.policy.periodFrom)}'],
-            ['Period To', '${formatDate(bill.policy.periodTo)}'],
+            ['Interest Insured', '${bill.firePolicy.interestInsured ?? "N/A"}'],
+            ['Coverage', '${bill.firePolicy.coverage ?? "N/A"}'],
+            ['Location', '${bill.firePolicy.location ?? "N/A"}'],
+            ['Construction', '${bill.firePolicy.construction ?? "N/A"}'],
+            ['Owner', '${bill.firePolicy.owner ?? "N/A"}'],
+            ['Used As', '${bill.firePolicy.usedAs ?? "N/A"}'],
+            ['Period From', '${formatDate(bill.firePolicy.periodFrom)}'],
+            ['Period To', '${formatDate(bill.firePolicy.periodTo)}'],
           ],
         ),
       ],
@@ -137,8 +137,8 @@ class AllFireBillDetails extends StatelessWidget {
         pw.Table.fromTextArray(
           headers: ['Description', 'Rate', 'BDT', 'Amount'],
           data: [
-            ['Fire Rate', '${bill.fire ?? 0}% on ${bill.policy.sumInsured ?? "N/A"}', 'TK', '${getTotalFire().toStringAsFixed(2)}'],
-            ['Rsd Rate', '${bill.rsd ?? 0}% on ${bill.policy.sumInsured ?? "N/A"}', 'TK', '${getTotalRsd().toStringAsFixed(2)}'],
+            ['Fire Rate', '${bill.fire ?? 0}% on ${bill.firePolicy.sumInsured ?? "N/A"}', 'TK', '${getTotalFire().toStringAsFixed(2)}'],
+            ['Rsd Rate', '${bill.rsd ?? 0}% on ${bill.firePolicy.sumInsured ?? "N/A"}', 'TK', '${getTotalRsd().toStringAsFixed(2)}'],
             ['Net Premium (Fire + RSD)', '', 'TK', '${getTotalPremium().toStringAsFixed(2)}'],
             ['Tax on Net Premium', '${bill.tax ?? 0}% on ${getTotalPremium().toStringAsFixed(2)}', 'TK', '${getTotalTax().toStringAsFixed(2)}'],
             ['Gross Premium with Tax', '', 'TK', '${getTotalPremiumWithTax().toStringAsFixed(2)}'],
@@ -172,21 +172,21 @@ class AllFireBillDetails extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _buildRow('Fire Bill No:', '${bill.policy.id ?? "N/A"}'),
-            _buildRow('Issue Date:', '${formatDate(bill.policy.date)}'),
-            _buildRow('Bank Name:', '${bill.policy.bankName ?? "N/A"}'),
-            _buildRow('Policyholder:', '${bill.policy.policyholder ?? "N/A"}'),
-            _buildRow('Address:', '${bill.policy.address ?? "N/A"}'),
-            _buildRow('Stock Insured:', '${bill.policy.stockInsured ?? "N/A"}'),
-            _buildRow('Sum Insured:', '${bill.policy.sumInsured ?? "N/A"} TK'),
-            _buildRow('Interest Insured:', '${bill.policy.interestInsured ?? "N/A"}'),
-            _buildRow('Coverage:', '${bill.policy.coverage ?? "N/A"}'),
-            _buildRow('Location:', '${bill.policy.location ?? "N/A"}'),
-            _buildRow('Construction:', '${bill.policy.construction ?? "N/A"}'),
-            _buildRow('Owner:', '${bill.policy.owner ?? "N/A"}'),
-            _buildRow('Used As:', '${bill.policy.usedAs ?? "N/A"}'),
-            _buildRow('Period From:', '${formatDate(bill.policy.periodFrom)}'),
-            _buildRow('Period To:', '${formatDate(bill.policy.periodTo)}'),
+            _buildRow('Fire Bill No:', '${bill.firePolicy.id ?? "N/A"}'),
+            _buildRow('Issue Date:', '${formatDate(bill.firePolicy.date)}'),
+            _buildRow('Bank Name:', '${bill.firePolicy.bankName ?? "N/A"}'),
+            _buildRow('Policyholder:', '${bill.firePolicy.policyholder ?? "N/A"}'),
+            _buildRow('Address:', '${bill.firePolicy.address ?? "N/A"}'),
+            _buildRow('Stock Insured:', '${bill.firePolicy.stockInsured ?? "N/A"}'),
+            _buildRow('Sum Insured:', '${bill.firePolicy.sumInsured ?? "N/A"} TK'),
+            _buildRow('Interest Insured:', '${bill.firePolicy.interestInsured ?? "N/A"}'),
+            _buildRow('Coverage:', '${bill.firePolicy.coverage ?? "N/A"}'),
+            _buildRow('Location:', '${bill.firePolicy.location ?? "N/A"}'),
+            _buildRow('Construction:', '${bill.firePolicy.construction ?? "N/A"}'),
+            _buildRow('Owner:', '${bill.firePolicy.owner ?? "N/A"}'),
+            _buildRow('Used As:', '${bill.firePolicy.usedAs ?? "N/A"}'),
+            _buildRow('Period From:', '${formatDate(bill.firePolicy.periodFrom)}'),
+            _buildRow('Period To:', '${formatDate(bill.firePolicy.periodTo)}'),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
@@ -231,14 +231,14 @@ class AllFireBillDetails extends StatelessWidget {
   }
 
   double getTotalFire() {
-    return bill.fire != null && bill.policy.sumInsured != null
-        ? (bill.fire! / 100) * bill.policy.sumInsured!
+    return bill.fire != null && bill.firePolicy.sumInsured != null
+        ? (bill.fire! / 100) * bill.firePolicy.sumInsured!
         : 0.0;
   }
 
   double getTotalRsd() {
-    return bill.rsd != null && bill.policy.sumInsured != null
-        ? (bill.rsd! / 100) * bill.policy.sumInsured!
+    return bill.rsd != null && bill.firePolicy.sumInsured != null
+        ? (bill.rsd! / 100) * bill.firePolicy.sumInsured!
         : 0.0;
   }
 

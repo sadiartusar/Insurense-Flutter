@@ -103,10 +103,10 @@ class _CreateFireBillState extends State<CreateFireBill> {
           netPremium: _parseControllerValue(netPremiumController.text),
           tax: _parseControllerValue(taxController.text),
           grossPremium: _parseControllerValue(grossPremiumController.text),
-          policy: selectedPolicy,
+          firePolicy: selectedPolicy,
         );
 
-        final createdBill = await billService.createFireBill(newBill, selectedPolicy.id!);
+        final createdBill = await billService.createFireBill(newBill);
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('✅ Fire Bill Created Successfully!')),

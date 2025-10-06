@@ -5,12 +5,12 @@ import 'package:general_insurance_management_system/model/firepolicy_model.dart'
 
 class FirebillModel {
   int? id;
-  double fire;
-  double rsd;
-  double netPremium;
-  double tax;
-  double grossPremium;
-  PolicyModel policy;
+  double? fire;
+  double? rsd;
+  double? netPremium;
+  double? tax;
+  double? grossPremium;
+  PolicyModel firePolicy;
 
 
   FirebillModel({
@@ -20,7 +20,7 @@ class FirebillModel {
     required this.netPremium,
     required this.tax,
     required this.grossPremium,
-    required this.policy,
+    required this.firePolicy
   });
 
   /// Factory constructor to create a MarineBillModel from a JSON map
@@ -32,7 +32,7 @@ class FirebillModel {
       netPremium: (json['netPremium'] is num) ? json['netPremium'].toDouble() : 0.0,
       tax: (json['tax'] is num) ? json['tax'].toDouble() : 0.0,
       grossPremium: (json['grossPremium'] is num) ? json['grossPremium'].toDouble() : 0.0,
-      policy: PolicyModel.fromJson(json['policy']),
+      firePolicy: PolicyModel.fromJson(json['firePolicy']),
     );
   }
 
@@ -47,7 +47,7 @@ class FirebillModel {
       'netPremium': netPremium,
       'tax': tax,
       'grossPremium': grossPremium,
-      'policy': policy.toJson(),
+      'firePolicy': firePolicy.toJson(),
     };
   }
 }
