@@ -5,6 +5,7 @@ import 'package:general_insurance_management_system/firepolicy/view_fire_money_r
 import 'package:general_insurance_management_system/firepolicy/view_firepolicy.dart';
 import 'package:general_insurance_management_system/page/home.dart';
 import 'package:general_insurance_management_system/page/login.dart';
+import 'package:general_insurance_management_system/page/registration.dart';
 
 
 void main() {
@@ -29,8 +30,8 @@ class MyApp extends StatefulWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         '/home': (context) => HomePage(),
-        // '/login': (context) => Login(),
-        // '/registration': (context) => Registration(),
+        '/login': (context) => LoginPage(),
+        '/registration': (context) => Registration(),
         '/viewfirepolicy': (context) => AllFirePolicyView(),
         '/viewfirebill': (context) => AllFireBillView(),
          '/viewfiremoneyreceipt': (context) => AllFireMoneyReceiptView(),
