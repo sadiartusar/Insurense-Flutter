@@ -12,10 +12,11 @@ class AllFirePolicyView extends StatefulWidget {
   State<AllFirePolicyView> createState() => _AllFirePolicyViewState();
 }
 
-class _AllFirePolicyViewState extends State<AllFirePolicyView> {
+class _AllFirePolicyViewState extends State<AllFirePolicyView>
+    with TickerProviderStateMixin {
   late Future<List<PolicyModel>> futurePolicies;
   final FirePolicyService policyService = FirePolicyService();
-  final TextStyle commonStyle = TextStyle(fontSize: 14, color: Colors.black);
+  final TextStyle commonStyle = const TextStyle(fontSize: 14, color: Colors.black);
   String searchTerm = '';
   List<PolicyModel> allPolicies = [];
   DateTime? startDate;
@@ -24,80 +25,78 @@ class _AllFirePolicyViewState extends State<AllFirePolicyView> {
   @override
   void initState() {
     super.initState();
-    loadPolicies(); // Load policies on initialization
+    loadPolicies();
   }
 
   Future<void> loadPolicies() async {
     futurePolicies = policyService.fetchPolicies();
-    setState(() {}); // Update the UI after fetching
+    setState(() {});
   }
 
   Future<void> _confirmDeletePolicy(int policyId) async {
     bool? shouldDelete = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: const Text('Confirm Deletion'),
         content: const Text('Are you sure you want to delete this policy?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            // Cancel deletion
             child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
           ),
-          TextButton(
+          ElevatedButton.icon(
             onPressed: () => Navigator.of(context).pop(true),
-            // Confirm deletion
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            icon: const Icon(Icons.delete, color: Colors.white),
+            label: const Text('Delete'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
           ),
         ],
       ),
     );
 
     if (shouldDelete == true) {
-      await _deletePolicy(policyId); // Proceed with deletion if confirmed
+      await _deletePolicy(policyId);
     }
   }
 
   Future<void> _deletePolicy(int policyId) async {
     try {
       await policyService.deleteFirePolicy(policyId);
-      await loadPolicies(); // Refresh the policy list after deletion
+      await loadPolicies();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Policy Deleted successfully'),
-            duration: Duration(seconds: 2)),
+        const SnackBar(content: Text('Policy deleted successfully')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Error deleting policy: $e'),
-            duration: Duration(seconds: 2)),
+        SnackBar(content: Text('Error deleting policy: $e')),
       );
     }
   }
 
   void _filterPolicies(String query) {
     setState(() {
-      searchTerm = query.toLowerCase(); // Update the search query
+      searchTerm = query.toLowerCase();
     });
   }
 
   List<PolicyModel> _getFilteredPolicies() {
     List<PolicyModel> filteredPolicies = allPolicies;
 
-    // Filter by date range
     if (startDate != null && endDate != null) {
       filteredPolicies = filteredPolicies.where((policy) {
-        // Check if 'policy.date' is already a DateTime object
-        DateTime policyDate = policy.date is DateTime
-            ? policy.date as DateTime
-            : DateTime.parse(policy.date as String);
+        final rawDate = policy.date; // <-- use your real field here
+        if (rawDate == null) return false;
+
+        final policyDate = rawDate is DateTime
+            ? rawDate
+            : DateTime.tryParse(rawDate.toString()) ?? DateTime(1900);
 
         return policyDate.isAfter(startDate!) && policyDate.isBefore(endDate!);
       }).toList();
     }
 
-    // Filter by search term
+
     if (searchTerm.isNotEmpty) {
       filteredPolicies = filteredPolicies.where((policy) {
         final policyholder = policy.policyholder?.toLowerCase() ?? '';
@@ -111,7 +110,6 @@ class _AllFirePolicyViewState extends State<AllFirePolicyView> {
 
     return filteredPolicies;
   }
-
 
   Future<void> _selectStartDate(BuildContext context) async {
     DateTime? selectedDate = await showDatePicker(
@@ -147,17 +145,13 @@ class _AllFirePolicyViewState extends State<AllFirePolicyView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fire Policy List'),
+        title: const Text('Fire Policy List', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
+        elevation: 5,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Colors.yellow.withOpacity(0.8),
-                Colors.green.withOpacity(0.8),
-                Colors.orange.withOpacity(0.8),
-                Colors.red.withOpacity(0.8),
-              ],
+              colors: [Colors.orangeAccent, Colors.redAccent, Colors.purpleAccent],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -165,226 +159,213 @@ class _AllFirePolicyViewState extends State<AllFirePolicyView> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pushNamed(context, '/home');
-          },
+          onPressed: () => Navigator.pushNamed(context, '/home'),
         ),
       ),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 600),
+        child: Column(
+          children: [
+            _buildSearchBar(),
+            _buildDateFilterRow(),
+            Expanded(
+              child: FutureBuilder<List<PolicyModel>>(
+                future: futurePolicies,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No policy available'));
+                  } else {
+                    allPolicies = snapshot.data!;
+                    final filteredPolicies = _getFilteredPolicies();
+                    return AnimatedList(
+                      key: GlobalKey<AnimatedListState>(),
+                      initialItemCount: filteredPolicies.length,
+                      itemBuilder: (context, index, animation) {
+                        final policy = filteredPolicies[index];
+                        return SlideTransition(
+                          position: Tween<Offset>(
+                              begin: const Offset(0, 0.1), end: Offset.zero)
+                              .animate(CurvedAnimation(
+                              parent: animation, curve: Curves.easeOut)),
+                          child: FadeTransition(
+                            opacity: animation,
+                            child: _buildPolicyCard(policy),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const CreateFirePolicy()),
+        ),
+        icon: const Icon(Icons.add),
+        label: const Text('New Policy'),
+        backgroundColor: Colors.deepPurpleAccent,
+      ),
+    );
+  }
 
-      body: Column(
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: TextField(
+        onChanged: _filterPolicies,
+        decoration: InputDecoration(
+          hintText: 'Search by ID, name, or bank',
+          prefixIcon: const Icon(Icons.search, color: Colors.deepPurple),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: const BorderSide(color: Colors.deepPurpleAccent)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateFilterRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Wrap(
+        spacing: 10,
+        alignment: WrapAlignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-            child: TextField(
-              onChanged: _filterPolicies,
-              // Call the filter function on text change
-              decoration: InputDecoration(
-                hintText: 'Search ',
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                  borderSide: const BorderSide(color: Colors.green, width: 1.0),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                prefixIcon: const Icon(Icons.search, color: Colors.green),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                  borderSide: const BorderSide(color: Colors.green, width: 1.0),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () => _selectStartDate(context),
-                child: Text(
-                  startDate == null
-                      ? 'Select Start Date'
-                      : 'Start Date: ${startDate!.toLocal().toString().split(' ')[0]}', // Format to show only date part
-                ),
-              ),
-              const SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () => _selectEndDate(context),
-                child: Text(
-                  endDate == null
-                      ? 'Select End Date'
-                      : 'End Date: ${endDate!.toLocal().toString().split(' ')[0]}', // Format to show only date part
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: FutureBuilder<List<PolicyModel>>(
-              future: futurePolicies,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No policy available'));
-                } else {
-                  allPolicies = snapshot.data!;
-                  final filteredPolicies = _getFilteredPolicies();
-                  return ListView.builder(
-                    itemCount: filteredPolicies.length,
-                    itemBuilder: (context, index) {
-                      final policy = filteredPolicies[index];
-                      return _buildPolicyCard(policy);
-                    },
-                  );
-                }
-              },
-            ),
-          ),
+          _animatedFilterButton(
+              label: startDate == null
+                  ? 'Select Start Date'
+                  : 'Start: ${startDate!.toLocal().toString().split(' ')[0]}',
+              onTap: () => _selectStartDate(context)),
+          _animatedFilterButton(
+              label: endDate == null
+                  ? 'Select End Date'
+                  : 'End: ${endDate!.toLocal().toString().split(' ')[0]}',
+              onTap: () => _selectEndDate(context)),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CreateFirePolicy()),
-          );
-        },
-        child: const Icon(Icons.add),
-        backgroundColor: Colors.blue,
+    );
+  }
+
+  Widget _animatedFilterButton({required String label, required VoidCallback onTap}) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      child: ElevatedButton.icon(
+        icon: const Icon(Icons.date_range),
+        label: Text(label),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.deepPurple.shade100,
+          foregroundColor: Colors.deepPurple,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        ),
+        onPressed: onTap,
       ),
     );
   }
 
   Widget _buildPolicyCard(PolicyModel policy) {
-    return MouseRegion(
-      onEnter: (_) => setState(() {
-        policy.isHovered = true;
-      }),
-      onExit: (_) => setState(() {
-        policy.isHovered = false;
-      }),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: policy.isHovered
-                ? [
-              Colors.blue.shade400,
-              Colors.pinkAccent.shade400,
-              Colors.purpleAccent.shade400,
-              Colors.cyanAccent.shade400,
-            ]
-                : [
-              Colors.red.shade400,
-              Colors.orange.shade400,
-              Colors.yellow.shade400,
-              Colors.green.shade400,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          border: Border.all(color: Colors.blueAccent.withOpacity(0.5)),
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: policy.isHovered
-              ? [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ]
-              : [],
-        ),
-        margin: const EdgeInsets.all(10),
-        child: Card(
-          elevation: policy.isHovered ? 8 : 0,
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Bill No : ${policy.id ?? 'N/A'}',
-                  style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  policy.bankName ?? 'Unnamed Policy',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 400),
+      tween: Tween(begin: 0.95, end: 1.0),
+      curve: Curves.easeOut,
+      builder: (context, scale, child) {
+        return Transform.scale(
+          scale: scale,
+          child: Card(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            elevation: 6,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            shadowColor: Colors.deepPurpleAccent.withOpacity(0.3),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(15),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => AllFirePolicyDetails(policy: policy)),
+              ),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.purple.shade100,
+                      Colors.deepPurple.shade200,
+                      Colors.indigo.shade100,
+                    ],
                   ),
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                const SizedBox(height: 8),
-                Text(policy.policyholder ?? 'No policyholder available',
-                    style: commonStyle),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                        child: Text(policy.address ?? 'No address',
-                            style: commonStyle)),
-                    const SizedBox(width: 10),
-                    Text('Tk ${policy.sumInsured ?? 'No sum'}',
+                    Text('Bill No: ${policy.id}', style: commonStyle),
+                    const SizedBox(height: 4),
+                    Text(policy.bankName ?? 'Unnamed Policy',
                         style: const TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.green)),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87)),
+                    const SizedBox(height: 8),
+                    Text(policy.policyholder ?? 'No policyholder', style: commonStyle),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(policy.address ?? 'No address', style: commonStyle),
+                        Text(
+                          'Tk ${policy.sumInsured ?? 'N/A'}',
+                          style: const TextStyle(
+                              color: Colors.green, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.visibility, color: Colors.blueAccent),
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    AllFirePolicyDetails(policy: policy)),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.cyan),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => UpdateFirePolicy(policy: policy),
+                              ),
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.redAccent),
+                          onPressed: () => _confirmDeletePolicy(policy.id!),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                _buildActionButtons(policy),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(PolicyModel policy) {
-    return Row(
-      children: [
-        IconButton(
-          icon: const Icon(Icons.visibility, color: Colors.blue),
-          onPressed: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => AllFirePolicyDetails(policy: policy)),
-            );
-            loadPolicies();
-          },
-          tooltip: 'View Details',
-        ),
-        const SizedBox(width: 16),
-        IconButton(
-          icon: const Icon(Icons.delete, color: Colors.red),
-          onPressed: () {
-            _confirmDeletePolicy(policy.id!);
-          },
-          tooltip: 'Delete Policy',
-        ),
-        const SizedBox(width: 8),
-        IconButton(
-          icon: const Icon(Icons.edit, color: Colors.cyan),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => UpdateFirePolicy(policy: policy),
-              ),
-            );
-          },
-          tooltip: 'Edit Policy',
-        ),
-      ],
+        );
+      },
     );
   }
 }

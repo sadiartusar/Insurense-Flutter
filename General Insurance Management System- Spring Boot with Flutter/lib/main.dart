@@ -3,10 +3,10 @@ import 'package:general_insurance_management_system/firepolicy/all_fire_bill_lis
 import 'package:general_insurance_management_system/firepolicy/view_fire_bill.dart';
 import 'package:general_insurance_management_system/firepolicy/view_fire_money_receipt.dart';
 import 'package:general_insurance_management_system/firepolicy/view_firepolicy.dart';
+import 'package:general_insurance_management_system/page/admin_profile.dart';
 import 'package:general_insurance_management_system/page/home.dart';
 import 'package:general_insurance_management_system/page/login.dart';
 import 'package:general_insurance_management_system/page/registration.dart';
-
 
 void main() {
   runApp(const MyApp());
@@ -19,45 +19,51 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-
-  class _MyAppState extends State<MyApp> {
-  int _hoverIndex = -1; // Variable to track hover state
-
-
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+
+      // ✅ Fixed routes (no arguments)
       routes: {
         '/home': (context) => HomePage(),
         '/login': (context) => LoginPage(),
         '/registration': (context) => Registration(),
         '/viewfirepolicy': (context) => AllFirePolicyView(),
         '/viewfirebill': (context) => AllFireBillView(),
-         '/viewfiremoneyreceipt': (context) => AllFireMoneyReceiptView(),
-        // '/viewmarinepolicy': (context) => AllMarinePolicyView(),
-        // '/viewmarinebill': (context) => AllMarineBillView(),
-        // '/viewmarinemoneyreceipt': (context) => AllMarineMoneyReceiptView(),
-        // '/viewpolicyreport': (context) => FirePolicyReportPage(),
-        // '/viewfirereports': (context) => FireBillReportPage(),
-        // '/viewmarinereports': (context) => MarineBillReportPage(),
-        // '/viewcombindreports': (context) => CombinedReport(),
-        // '/viewmarinereport': (context) => MarinePolicyReportPage(),
-        // '/viewfiremoneyreceiptreports': (context) => FireMoneyReceiptReportPage(),
-        // '/viewmarinemoneyreceiptreports': (context) => MarineMoneyReceiptReportPage(),
-        // '/viewcombindmoneyreports': (context) => CombinedMoneyReceiptReport(),
+        '/viewfiremoneyreceipt': (context) => AllFireMoneyReceiptView(),
+        // ✅ Keep your other routes as needed
       },
-      onUnknownRoute: (settings) => MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(title: const Text("Page Not Found")),
-          body: const Center(
-              child: Text("The page you're looking for doesn't exist.")),
-        ),
-      ),
+
+      // ✅ Dynamic route handler for routes with arguments
+      onGenerateRoute: (settings) {
+        if (settings.name == '/adminProfile') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (context) => AdminProfile(profile: args),
+          );
+        }
+        // if (settings.name == '/home') {
+        //   final args = settings.arguments as Map<String, dynamic>;
+        //   return MaterialPageRoute(
+        //     builder: (context) => HomePage(profile: args),
+        //   );
+        // }
+
+        // Unknown route fallback
+        return MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(title: const Text("Page Not Found")),
+            body: const Center(
+              child: Text("The page you're looking for doesn't exist."),
+            ),
+          ),
+        );
+      },
+
+      // ✅ Entry point
       home: LoginPage(),
     );
   }
-  }
-
-
-
+}

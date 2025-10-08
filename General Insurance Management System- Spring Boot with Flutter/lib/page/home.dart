@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/page/head_office.dart';
 
@@ -7,15 +6,15 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage> {
   int _carouselIndex = 0;
+  int _hoverIndex = -1;
+  int _selectedBottomIndex = 1; // Default to Home
   late PageController _pageController;
   Timer? _timer;
-  int _hoverIndex = -1;
-  late AnimationController _animationController;
 
   static const List<String> _images = [
     'https://www.shutterstock.com/image-photo/family-house-car-protected-by-260nw-1502368643.jpg',
@@ -24,70 +23,27 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   ];
 
   static const List<String> _texts = [
-    'সবার চোখের সামনেই তাদের ভবিষ্যত থাকে',
-    'এটাকে শুধু পরিকল্পনা অনুযায়ী সাজিয়ে নিতে হয়',
-    'জীবনে অনেক কাজে আসতে পারে ',
+    'Everyone has their future right in front of their eyes',
+    'It just needs to be organized according to a plan',
+    'It can be very useful in life',
   ];
 
-  static const List<Color> _colors = [
-    Colors.purple,
-    Colors.green,
-    Colors.lime,
+  final List<Map<String, String>> _items = [
+    {"img": "https://cdn-icons-png.flaticon.com/128/1973/1973100.png", "title": "Fire Policy"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/1861/1861925.png", "title": "Fire Bill"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/3705/3705833.png", "title": "Fire Money\nReceipt"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/2485/2485104.png", "title": "Marine Policy"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/14173/14173808.png", "title": "Marine Bill"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/9721/9721335.png", "title": "Marine Money\nReceipt"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/12245/12245214.png", "title": "Fire Policy\nReports"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/9621/9621072.png", "title": "Fire Bill\nReports"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/1055/1055644.png", "title": "Fire Money\nReceipt Reports"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/438/438036.png", "title": "Marine Policy\nReports"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/2783/2783924.png", "title": "Marine Bill\nReports"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/3270/3270753.png", "title": "Marine Money\nReceipt Reports"},
   ];
 
-  final List<Map<String, String>> myItems = [
-    {
-      "img": "https://cdn-icons-png.flaticon.com/128/1973/1973100.png",
-      "title": "Fire Policy"
-    },
-    {
-      "img": "https://cdn-icons-png.flaticon.com/128/1861/1861925.png",
-      "title": "Fire Bill"
-    },
-    {
-      "img": "https://cdn-icons-png.flaticon.com/128/3705/3705833.png",
-      "title": "Fire Money\nReceipt"
-    },
-    {
-      "img": "https://cdn-icons-png.flaticon.com/128/2485/2485104.png",
-      "title": "Marine Policy"
-    },
-    {
-      "img": "https://cdn-icons-png.flaticon.com/128/14173/14173808.png",
-      "title": "Marine Bill"
-    },
-    {
-      "img": "https://cdn-icons-png.flaticon.com/128/9721/9721335.png",
-      "title": "Marine Money\nReceipt"
-    },
-    {
-      "img": "https://cdn-icons-png.flaticon.com/128/12245/12245214.png",
-      "title": "Fire Policy\nReports"
-    },
-    {
-      "img": "https://cdn-icons-png.flaticon.com/128/9621/9621072.png",
-      "title": "Fire Bill\nReports"
-    },
-    {
-      "img": "https://cdn-icons-png.flaticon.com/128/1055/1055644.png",
-      "title": "Fire Money\nReceipt Reports"
-    },
-    {
-      "img": "https://cdn-icons-png.flaticon.com/128/438/438036.png",
-      "title": "Marine Policy\nReports"
-    },
-    {
-      "img": "https://cdn-icons-png.flaticon.com/128/2783/2783924.png",
-      "title": "Marine Bill\nReports"
-    },
-    {
-      "img": "https://cdn-icons-png.flaticon.com/128/3270/3270753.png",
-      "title": "Marine Money\nReceipt Reports"
-    },
-  ];
-
-
-  final List<String> cardRoutes = [
+  final List<String> _routes = [
     '/viewfirepolicy',
     '/viewfirebill',
     '/viewfiremoneyreceipt',
@@ -106,264 +62,217 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void initState() {
     super.initState();
     _pageController = PageController();
-    _startAutoPageChange();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-      lowerBound: 0.95,
-      upperBound: 1.05,
-    );
+    _autoChangeCarousel();
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _pageController.dispose();
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  void _startAutoPageChange() {
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      setState(() {
-        _carouselIndex = (_carouselIndex + 1) % _images.length;
-      });
+  void _autoChangeCarousel() {
+    _timer = Timer.periodic(const Duration(seconds: 4), (_) {
+      _carouselIndex = (_carouselIndex + 1) % _images.length;
       _pageController.animateToPage(
         _carouselIndex,
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 600),
         curve: Curves.easeInOut,
       );
     });
   }
 
   @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
-      drawer: _buildDrawer(),
-      body: _buildBody(),
-      bottomNavigationBar: _buildBottomNavigationBar(context),
+      appBar: _buildSmartAppBar(),
+      drawer: _buildSmartDrawer(),
+      body: _buildSmartBody(),
+      bottomNavigationBar: _buildSmartBottomNav(context),
     );
   }
 
-  AppBar _buildAppBar() {
+  AppBar _buildSmartAppBar() {
     return AppBar(
-      title: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Text(
-            'Green General Insuranse Company LTD',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white),
-          ),
-          Text('sadiar.rahman970@gmail.com, +8801722652595',
-              style: TextStyle(fontSize: 12 ,fontWeight: FontWeight.bold,color: Colors.white)),
-        ],
+      title: const Text(
+        'Green General Insurance Company LTD',
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
       centerTitle: true,
-      flexibleSpace: Container(
+      flexibleSpace: AnimatedContainer(
+        duration: const Duration(seconds: 2),
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.purple, Colors.blue, Colors.lightGreen, Colors.teal, Colors.purple],
+            colors: [Colors.purple, Colors.teal, Colors.green],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ),
-      ),
-      leading: Builder(
-        builder: (context) => IconButton(
-          icon: CircleAvatar(
-            backgroundImage: NetworkImage(
-              'https://cdn.b12.io/client_media/5KgiSduG/bac4acae-1a8f-11ed-add6-0242ac110003-png-regular_image.png',
-            ),
-          ),
-          onPressed: () {
-            Scaffold.of(context).openDrawer();
-          },
         ),
       ),
     );
-
   }
 
-  Drawer _buildDrawer() {
+  Drawer _buildSmartDrawer() {
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
-        children: <Widget>[
-          DrawerHeader(
-            decoration: const BoxDecoration(
+        children: [
+          const UserAccountsDrawerHeader(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blueAccent, Colors.greenAccent, Colors.orangeAccent, Colors.purpleAccent],
+                colors: [Colors.blueAccent, Colors.greenAccent],
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const CircleAvatar(
-                  radius: 30,
-                  backgroundImage: AssetImage('asset/images/avatar.jpg'),
-                ),
-                const SizedBox(height: 10),
-                const Text('Welcome, Head Office!', style: TextStyle(color: Colors.white, fontSize: 20)),
-                const Text('sadiar.rahman970@gmail.com', style: TextStyle(color: Colors.white70)),
-              ],
+            accountName: Text("Head Office"),
+            accountEmail: Text("sadiar.rahman970@gmail.com"),
+            currentAccountPicture: CircleAvatar(
+              backgroundImage: AssetImage('asset/images/avatar.jpg'),
             ),
           ),
-          _buildDrawerItem(context, Icons.person, 'Profile', '/profile'),
-          _buildDrawerItem(context, Icons.contact_mail, 'Contact Us', '/contact'),
-          _buildDrawerItem(context, Icons.business, 'Head Office', '/headOffice'),
-          _buildDrawerItem(context, Icons.location_city, 'Local Office', '/localOffice'),
+          _drawerItem(Icons.person, 'Profile', '/profile'),
+          _drawerItem(Icons.contact_mail, 'Contact Us', '/contact'),
+          _drawerItem(Icons.business, 'Head Office', '/headOffice'),
+          _drawerItem(Icons.location_city, 'Local Office', '/localOffice'),
           const Divider(),
-          _buildDrawerItem(context, Icons.login, 'Login', '/login'),
-          _buildDrawerItem(context, Icons.logout, 'Logout', '/login'),
+          _drawerItem(Icons.login, 'Login', '/login'),
+          _drawerItem(Icons.logout, 'Logout', '/login'),
         ],
       ),
     );
   }
 
-  Widget _buildDrawerItem(BuildContext context, IconData icon, String label, String route) {
+  ListTile _drawerItem(IconData icon, String title, String route) {
     return ListTile(
-      leading: Icon(icon),
-      title: Text(label),
-      onTap: () {
-        Navigator.pushNamed(context, route);
-      },
+      leading: Icon(icon, color: Colors.teal),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      onTap: () => Navigator.pushNamed(context, route),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildSmartBody() {
     return Container(
-      color: Colors.green.withOpacity(0.1), // Background color
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start, // Align items to the start
-            children: [
-              _buildCarousel(),
-              const SizedBox(height: 15),
-              _buildGrid(),
-            ],
+      color: Colors.green.withValues(alpha: 0.05),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildSmartCarousel(),
+          const SizedBox(height: 20),
+          _buildSmartGrid(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSmartCarousel() {
+    return Column(
+      children: [
+        SizedBox(
+          height: 180,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: _images.length,
+            onPageChanged: (i) => setState(() => _carouselIndex = i),
+            itemBuilder: (context, index) => AnimatedContainer(
+              duration: const Duration(milliseconds: 500),
+              margin: const EdgeInsets.symmetric(horizontal: 5),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                image: DecorationImage(
+                  image: NetworkImage(_images[index]),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Container(
+                alignment: Alignment.bottomCenter,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  gradient: LinearGradient(
+                    colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  ),
+                ),
+                child: Text(
+                  _texts[index],
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildCarousel() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(10.0),
-      child: SizedBox(
-        height: 160,
-        child: PageView.builder(
-          controller: _pageController,
-          itemCount: _images.length,
-          onPageChanged: (index) {
-            setState(() {
-              _carouselIndex = index;
-            });
-          },
-          itemBuilder: (context, index) {
-            return Container(
-              color: _colors[index],
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.network(_images[index], fit: BoxFit.cover),
-                  Positioned(
-                    bottom: 10,
-                    left: 10,
-                    right: 10,
-                    child: Text(
-                      _texts[index],
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontStyle: FontStyle.italic,
-                        backgroundColor: Colors.white70,
-                      ),
-                    ),
-                  ),
-                ],
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(_images.length, (i) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: _carouselIndex == i ? 16 : 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: _carouselIndex == i ? Colors.teal : Colors.grey,
+                borderRadius: BorderRadius.circular(10),
               ),
             );
-          },
+          }),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildGrid() {
+  Widget _buildSmartGrid() {
     return GridView.builder(
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(), // Disable scrolling within GridView
+      physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
-        childAspectRatio: 1.2, // Adjust as needed for card size
+        childAspectRatio: 1.1,
       ),
-      itemCount: myItems.length,
+      itemCount: _items.length,
       itemBuilder: (context, index) {
-        final item = myItems[index];
-        return GestureDetector(
-          onTap: () {
-            if (index < cardRoutes.length) {
-              Navigator.pushNamed(context, cardRoutes[index]);
-            }
-          },
-          child: MouseRegion(
-            onEnter: (_) => setState(() {
-              _hoverIndex = index;
-            }),
-            onExit: (_) => setState(() {
-              _hoverIndex = -1;
-            }),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              transform: Matrix4.identity()
-                ..scale(_hoverIndex == index ? 1.1 : 1.0),
-              decoration: BoxDecoration(
-                boxShadow: [
-                  if (_hoverIndex == index)
-                    BoxShadow(
-                      color: Colors.amber.withOpacity(0.4),
-                      spreadRadius: 3,
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  BoxShadow(
-                    color: Colors.green.withOpacity(0.2),
-                    spreadRadius: 2,
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+        final item = _items[index];
+        return MouseRegion(
+          onEnter: (_) => setState(() => _hoverIndex = index),
+          onExit: (_) => setState(() => _hoverIndex = -1),
+          child: AnimatedScale(
+            scale: _hoverIndex == index ? 1.1 : 1.0,
+            duration: const Duration(milliseconds: 200),
+            child: Card(
+              elevation: _hoverIndex == index ? 8 : 2,
+              shadowColor: Colors.tealAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
               ),
-              child: Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: SizedBox(
-                  height: 100,
-                  width: 100,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(15),
+                onTap: () {
+                  if (index < _routes.length) {
+                    Navigator.pushNamed(context, _routes[index]);
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.network(
-                        item["img"]!,
-                        height: 40,
-                        width: 40,
-                        fit: BoxFit.cover,
-                      ),
+                      Image.network(item["img"]!, height: 40),
                       const SizedBox(height: 8),
                       Text(
                         item["title"]!,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                            fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -376,76 +285,31 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
+  Widget _buildSmartBottomNav(BuildContext context) {
+    final items = [
+      {'icon': Icons.location_city_rounded, 'label': 'Head Office'},
+      {'icon': Icons.home, 'label': 'Home'},
+      {'icon': Icons.notifications, 'label': 'Notifications'},
+    ];
 
-
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    return BottomAppBar(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildBottomNavButton(context, 'Head Office', Icons.location_city_rounded, () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const HeadOffice()));
-          }),
-          // _buildBottomNavButton(context, 'Local Office', Icons.location_city, () {
-          //   Navigator.push(context, MaterialPageRoute(builder: (_) => const LocalOffice()));
-          // }),
-          _buildBottomNavButton(context, 'Home', Icons.home, () {}),
-          // _buildBottomNavButton(context, 'Search', Icons.search, () {}),
-          _buildBottomNavButton(context, 'Notifications', Icons.notifications, () {}),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNavButton(
-      BuildContext context, String label, IconData icon, VoidCallback onPressed) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: MouseRegion(
-        onEnter: (_) => setState(() {
-          _hoverIndex = label.hashCode;  // Use a unique hash for each label
-        }),
-        onExit: (_) => setState(() {
-          _hoverIndex = -1;
-        }),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          transform: Matrix4.identity()
-            ..scale(_hoverIndex == label.hashCode ? 1.2 : 1.0), // Scale on hover
-          decoration: BoxDecoration(
-            boxShadow: [
-              if (_hoverIndex == label.hashCode)
-                BoxShadow(
-                  color: Colors.cyan.withOpacity(0.2), // Light blue shadow on hover
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
-                ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: _hoverIndex == label.hashCode ? Colors.blue : Colors.green,
-                size: _hoverIndex == label.hashCode ? 30 : 24, // Increase icon size on hover
-              ),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: _hoverIndex == label.hashCode ? Colors.pinkAccent : Colors.green,
-                  fontStyle: _hoverIndex == label.hashCode ? FontStyle.italic : FontStyle.normal, // Optional italic on hover
-                ),
-              ),
-            ],
-          ),
+    return BottomNavigationBar(
+      currentIndex: _selectedBottomIndex,
+      onTap: (index) {
+        setState(() => _selectedBottomIndex = index);
+        if (index == 0) {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const HeadOffice()));
+        }
+      },
+      selectedItemColor: Colors.teal,
+      unselectedItemColor: Colors.grey,
+      items: items
+          .map(
+            (e) => BottomNavigationBarItem(
+          icon: Icon(e['icon'] as IconData),
+          label: e['label'] as String,
         ),
-      ),
+      )
+          .toList(),
     );
   }
-
-
 }
