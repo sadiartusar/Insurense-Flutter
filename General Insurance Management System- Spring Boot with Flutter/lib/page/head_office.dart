@@ -46,7 +46,7 @@ class _HeadOfficeState extends State<HeadOffice> {
           builder: (context) => IconButton(
             icon: const CircleAvatar(
               backgroundImage: NetworkImage(
-                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQntUidjT9ib73xOZ_LYOvhZg9bSvlU9hOGjaWbTALttUeqeEjJUWKJHbT4r1UqjFM3caQ&usqp=CAU',
+                'https://copilot.microsoft.com/th/id/BCO.fdbb95d7-6870-4322-99f1-ab9f191b0eaa.png',
               ),
             ),
             tooltip: 'Open Drawer',

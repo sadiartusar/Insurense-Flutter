@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/model/firemoneyreceipt_model.dart';
-
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -11,358 +10,372 @@ class PrintFireMoneyReceipt extends StatelessWidget {
 
   const PrintFireMoneyReceipt({super.key, required this.moneyreceipt});
 
-  static const double _fontSize = 14;
+  static const double _defaultFontSize = 14;
 
-  // Function to create PDF with table format
+  // --- Getters for Premium Calculations (Smart and Reusable) ---
+
+  double get _sumInsured => moneyreceipt.fireBill?.firePolicy.sumInsured ?? 0.0;
+  double get _fireRate => moneyreceipt.fireBill?.fire ?? 0.0;
+  double get _rsdRate => moneyreceipt.fireBill?.rsd ?? 0.0;
+  double get _taxRate => moneyreceipt.fireBill?.tax ?? 0.0;
+
+  double get _totalFire => _fireRate * _sumInsured;
+
+  double get _totalRsd => _rsdRate * _sumInsured;
+
+  double get _totalNetPremium => _totalFire + _totalRsd;
+
+  double get _totalTax => _totalNetPremium * _taxRate;
+
+  double get _totalGrossPremiumWithTax => _totalNetPremium + _totalTax;
+
+  // --- Date Formatting Helper ---
+  String _formatDate(DateTime? date) =>
+      date != null ? DateFormat('dd-MM-yyyy').format(date) : "N/A";
+
+  // --- Convert Number to Words Helper ---
+  String _convertToWords(double num) {
+    const ones = [
+      "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+      "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
+      "Seventeen", "Eighteen", "Nineteen"
+    ];
+    const tens = [
+      "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy",
+      "Eighty", "Ninety"
+    ];
+
+    String words(int n) {
+      if (n == 0) return "";
+      if (n < 20) return ones[n];
+      if (n < 100) return '${tens[n ~/ 10]}${n % 10 != 0 ? " ${ones[n % 10]}" : ""}';
+      if (n < 1000) return '${ones[n ~/ 100]} Hundred${n % 100 != 0 ? " ${words(n % 100)}" : ""}';
+      if (n < 1000000) return '${words(n ~/ 1000)} Thousand${n % 1000 != 0 ? " ${words(n % 1000)}" : ""}';
+      if (n < 1000000000) return '${words(n ~/ 1000000)} Million${n % 1000000 != 0 ? " ${words(n % 1000000)}" : ""}';
+      // Added a large number case if needed, otherwise this is a safe default
+      return "";
+    }
+
+    final intPart = num.toInt();
+    final decimalPart = ((num - intPart) * 100).toInt();
+
+    var result = words(intPart).trim();
+
+    // Simple approach for decimal part (e.g., "Point Five Zero" for .50)
+    // If you need proper decimal words (e.g., "and Fifty Paisa"), the logic would change.
+    if (decimalPart > 0) {
+      result += " Point ${words(decimalPart)}";
+    }
+
+    // Ensuring the final result doesn't start with a space
+    return result.trim().isEmpty ? "Zero" : result.trim();
+  }
+
+  // --- PDF Generator ---
   Future<pw.Document> _generatePdf(BuildContext context) async {
     final pdf = pw.Document();
 
     pdf.addPage(
       pw.Page(
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              pw.SizedBox(height: 5),
-              _buildFireBillInfo(),
-              _buildInsuredDetails(),
-              _buildInsuredCondition(),
-              _buildSumInsuredDetails(),
-              _buildSituationDetails(),
-              _buildPremiumAndTaxDetails(),
-              pw.SizedBox(height: 20),
-              _buildFooterDetails(),
-            ],
-          );
-        },
+        pageFormat: PdfPageFormat.a4,
+        build: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            pw.SizedBox(height: 5),
+            _buildFireBillInfo(),
+            _buildInsuredDetails(),
+            _buildInsuredCondition(),
+            _buildSumInsuredDetails(),
+            _buildSituationDetails(),
+            _buildPremiumAndTaxDetails(),
+            pw.SizedBox(height: 20),
+            _buildFooterDetails(),
+          ],
+        ),
       ),
     );
 
     return pdf;
   }
 
-  // Helper methods for building PDF sections
-  pw.Widget _buildHeader() {
-    return pw.Center(
-      child: pw.Column(
-        children: [
-          pw.Text("Islami Insurance Company Bangladesh Ltd",
-              style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
-          pw.Text("DR Tower (14th floor), 65/2/2, Purana Paltan, Dhaka-1000."),
-          pw.Text("Tel: 02478853405, Mob: 01763001787"),
-          pw.Text("Fax: +88 02 55112742"),
-          pw.Text("Email: infociclbd.com"),
-          pw.Text("Web: www.islamiinsurance.com"),
+  // --- Header Section ---
+  pw.Widget _buildHeader() => pw.Center(
+    child: pw.Column(
+      children: [
+        pw.Text(
+          "Green Insurance Company Bangladesh Ltd",
+          style:
+          pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+        ),
+        pw.Text("DR Tower (14th floor), 65/2/2, Purana Paltan, Dhaka-1000."),
+        pw.Text("Tel: 02478853405 | Mob: 01763001787"),
+        pw.Text("Fax: +88 02 55112742"),
+        pw.Text("Email: info@ciclbd.com"),
+        pw.Text("Web: www.greeninsurance.com"),
+      ],
+    ),
+  );
+
+  // --- Fire Bill Info ---
+  pw.Widget _buildFireBillInfo() => pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.center,
+    children: [
+      pw.Text("Fire Cover Note", style: _headerTextStyle()),
+      pw.SizedBox(height: 10),
+      pw.Table.fromTextArray(
+        data: [
+          [
+            'Fire Cover Note No', moneyreceipt.issuedAgainst ?? "N/A",
+            'Fire Bill No', moneyreceipt.fireBill?.firePolicy.id?.toString() ?? "N/A",
+            'Date', _formatDate(moneyreceipt.fireBill?.firePolicy.date),
+          ],
         ],
       ),
-    );
-  }
+    ],
+  );
 
-  pw.Widget _buildFireBillInfo() {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.center,
-      children: [
-        // Header text for "Fire Cover Note"
-        pw.Text("Fire Cover Note", style: _headerTextStyle()),
-
-        // Spacer between header and table
-        pw.SizedBox(height: 10),
-
-        // Table for fire bill information
-        pw.Table.fromTextArray(
-          data: [
-            [
-              'Fire Cover Note No', '${moneyreceipt.issuedAgainst ?? "N/A"}',
-              'Fire Bill No', '${moneyreceipt.fireBill?.firePolicy.id ?? "N/A"}',
-              'Date', '${formatDate(moneyreceipt.fireBill?.firePolicy.date)}'
-            ],
-          ],
-        ),
-      ],
-    );
-  }
-
-
+  // --- Insured Details ---
   pw.Widget _buildInsuredDetails() {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Table.fromTextArray(
-          data: [
-            ['The Insured Name & Address',
-              '${moneyreceipt.fireBill?.firePolicy.bankName ?? "N/A"}\n${moneyreceipt.fireBill?.firePolicy.policyholder ?? "N/A"}\n${moneyreceipt.fireBill?.firePolicy.address ?? "N/A"}'],
-          ],
-        ),
+    final policy = moneyreceipt.fireBill?.firePolicy;
+    final addressDetails = '${policy?.bankName ?? "N/A"}\n'
+        '${policy?.policyholder ?? "N/A"}\n'
+        '${policy?.address ?? "N/A"}';
+
+    return pw.Table.fromTextArray(
+      data: [
+        [
+          'The Insured Name & Address',
+          addressDetails,
+        ],
       ],
     );
   }
 
+  // --- Insured Condition ---
   pw.Widget _buildInsuredCondition() {
-    // Calculate the sum insured in words
-    final sumInsuredInWords = convertToWords(moneyreceipt.fireBill?.firePolicy.sumInsured ?? 0);
+    final policy = moneyreceipt.fireBill?.firePolicy;
+    final sumInsuredInWords = _convertToWords(policy?.sumInsured ?? 0.0);
 
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Table.fromTextArray(
-          data: [
-            [
-              'Having this day proposed to effect an insurance against Fire and/or Lightning for a period of 12 (Twelve) months from ${formatDate(moneyreceipt.fireBill?.firePolicy.periodFrom)}, to ${formatDate(moneyreceipt.fireBill?.firePolicy.periodTo)} on the usual terms and conditions of the company\'s Fire Policy. Having paid the undernoted premium in cash/cheque/P.O/D.D./C.A, the following Property is hereby insured to the extent of (${sumInsuredInWords}) Only in the manner specified below:'
-            ],
-          ],
-        ),
+    return pw.Table.fromTextArray(
+      data: [
+        [
+          'Having this day proposed to effect an insurance against Fire and/or Lightning for 12 (Twelve) months from ${_formatDate(policy?.periodFrom)} to ${_formatDate(policy?.periodTo)} on the usual terms and conditions of the company’s Fire Policy. Having paid the undernoted premium in cash/cheque/P.O/D.D./C.A, the following property is hereby insured to the extent of ($sumInsuredInWords) Only in the manner specified below:'
+        ],
       ],
     );
   }
 
-
-
-
+  // --- Sum Insured Details ---
   pw.Widget _buildSumInsuredDetails() {
-    // Assuming `sumInsured` is a number, you would use the convertToWords function here.
-    final sumInsuredInWords = convertToWords(moneyreceipt.fireBill?.firePolicy.sumInsured ?? 0);
+    final policy = moneyreceipt.fireBill?.firePolicy;
+    final sumInsuredInWords = _convertToWords(policy?.sumInsured ?? 0.0);
 
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Table.fromTextArray(
-          data: [
-            ['Stock Insured', '${moneyreceipt.fireBill?.firePolicy.stockInsured ?? "N/A"}'],
-            // Display both numeric value and words for sum insured
-            ['Sum Insured', 'TK. ${moneyreceipt.fireBill?.firePolicy.sumInsured ?? "N/A"} (${sumInsuredInWords})'],
-          ],
-        ),
+    return pw.Table.fromTextArray(
+      data: [
+        ['Stock Insured', policy?.stockInsured ?? "N/A"],
+        [
+          'Sum Insured',
+          'TK. ${policy?.sumInsured ?? "N/A"} ($sumInsuredInWords)',
+        ],
       ],
     );
   }
 
-  String convertToWords(double num) {
-    const ones = [
-      "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
-      "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen",
-      "Eighteen", "Nineteen"
-    ];
-    const tens = [
-      "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"
-    ];
-
-    String numToWords(int n) {
-      if (n == 0) return "";
-      if (n < 20) return ones[n];
-      if (n < 100) return tens[n ~/ 10] + (n % 10 != 0 ? " " + ones[n % 10] : "");
-      if (n < 1000) return ones[n ~/ 100] + " Hundred" + (n % 100 != 0 ? " " + numToWords(n % 100) : "");
-      if (n < 1000000) return numToWords(n ~/ 1000) + " Thousand" + (n % 1000 != 0 ? " " + numToWords(n % 1000) : "");
-      if (n < 1000000000) return numToWords(n ~/ 1000000) + " Million" + (n % 1000000 != 0 ? " " + numToWords(n % 1000000) : "");
-      return "";
-    }
-
-    // Split the number into integer and decimal parts
-    int intPart = num.toInt();
-    int decimalPart = ((num - intPart) * 100).toInt(); // Considering two decimal places
-
-    // Convert the integer part to words
-    String result = numToWords(intPart);
-    if (decimalPart > 0) {
-      result += " Point ";
-      // Convert each digit of the decimal part to words
-      String decimalWords = decimalPart.toString().split('').map((e) => ones[int.parse(e)]).join(" ");
-      result += decimalWords;
-    }
-
-    return result.trim(); // Clean up extra spaces
-  }
-
-
+  // --- Situation Details ---
   pw.Widget _buildSituationDetails() {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Table.fromTextArray(
-          data: [
-            ['Interest Insured', '${moneyreceipt.fireBill?.firePolicy.interestInsured ?? "N/A"}'],
-            ['Coverage', '${moneyreceipt.fireBill?.firePolicy.coverage ?? "N/A"}'],
-            ['Location', '${moneyreceipt.fireBill?.firePolicy.location ?? "N/A"}'],
-            ['Construction', '${moneyreceipt.fireBill?.firePolicy.construction ?? "N/A"}'],
-            ['Owner', '${moneyreceipt.fireBill?.firePolicy.owner ?? "N/A"}'],
-            ['Used As', '${moneyreceipt.fireBill?.firePolicy.usedAs ?? "N/A"}'],
-          ],
-        ),
-      ],
-    );
-  }
+    final policy = moneyreceipt.fireBill?.firePolicy;
+    final fields = {
+      'Interest Insured': policy?.interestInsured,
+      'Coverage': policy?.coverage,
+      'Location': policy?.location,
+      'Construction': policy?.construction,
+      'Owner': policy?.owner,
+      'Used As': policy?.usedAs,
+    };
 
-
-  pw.Widget _buildPremiumAndTaxDetails() {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Table.fromTextArray(
-          headers: ['Description', 'Rate', 'BDT', 'Amount'],
-          data: [
-            ['Fire Rate', '${moneyreceipt.fireBill?.fire ?? 0}% on ${moneyreceipt.fireBill?.firePolicy.sumInsured ?? "N/A"}', 'TK', '${getTotalFire().toStringAsFixed(2)}'],
-            ['Rsd Rate', '${moneyreceipt.fireBill?.rsd ?? 0}% on ${moneyreceipt.fireBill?.firePolicy.sumInsured ?? "N/A"}', 'TK', '${getTotalRsd().toStringAsFixed(2)}'],
-            ['Net Premium (Fire + RSD)', '', 'TK', '${getTotalPremium().toStringAsFixed(2)}'],
-            ['Tax on Net Premium', '${moneyreceipt.fireBill?.tax ?? 0}% on ${getTotalPremium().toStringAsFixed(2)}', 'TK', '${getTotalTax().toStringAsFixed(2)}'],
-            ['Gross Premium with Tax', '', 'TK', '${getTotalPremiumWithTax().toStringAsFixed(2)}'],
-          ],
-        ),
-      ],
-    );
-  }
-
-  pw.Widget _buildFooterDetails() {
-    return pw.Column(
-      children: [
-        pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+    return pw.Table(
+      border: pw.TableBorder.all(),
+      children: fields.entries
+          .map(
+            (e) => pw.TableRow(
           children: [
-            pw.Expanded(
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text('Renewal No:'),
-                  pw.Text('${moneyreceipt.issuedAgainst} / ${moneyreceipt.fireBill?.firePolicy.id ?? "N/A"} / ${formatDate(moneyreceipt.fireBill?.firePolicy.date)}'),
-                  pw.Text('Checked by ________________'),
-                ],
-              ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(5),
+              child: pw.Text(e.key, style: const pw.TextStyle(fontSize: _defaultFontSize)),
             ),
-            pw.Expanded(
-              child: pw.Column(
-                children: [
-                  pw.Text('Fully Re-insured with'),
-                  pw.Text('Sadharan Bima Corporation'),
-                ],
-              ),
-            ),
-            pw.Expanded(
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Text('For & on behalf of'),
-                  pw.Text('Islami Insurance Com. Ltd.'),
-                  pw.Text('     Authorized Officer    ______________________'),
-                ],
-              ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(5),
+              child: pw.Text(e.value ?? "N/A", style: const pw.TextStyle(fontSize: _defaultFontSize)),
             ),
           ],
         ),
-      ],
+      )
+          .toList(),
     );
   }
 
+  // --- Premium and Tax Details ---
+  pw.Widget _buildPremiumAndTaxDetails() => pw.Table.fromTextArray(
+    headers: ['Description', 'Rate', 'BDT', 'Amount'],
+    data: [
+      [
+        'Fire Rate',
+        '${(_fireRate * 100).toStringAsFixed(2)}% on ${_sumInsured.toStringAsFixed(2)}',
+        'TK',
+        _totalFire.toStringAsFixed(2)
+      ],
+      [
+        'RSD Rate',
+        '${(_rsdRate * 100).toStringAsFixed(2)}% on ${_sumInsured.toStringAsFixed(2)}',
+        'TK',
+        _totalRsd.toStringAsFixed(2)
+      ],
+      [
+        'Net Premium (Fire + RSD)',
+        '',
+        'TK',
+        _totalNetPremium.toStringAsFixed(2)
+      ],
+      [
+        'Tax on Net Premium',
+        '${(_taxRate * 100).toStringAsFixed(2)}% on ${_totalNetPremium.toStringAsFixed(2)}',
+        'TK',
+        _totalTax.toStringAsFixed(2)
+      ],
+      [
+        'Gross Premium with Tax',
+        '',
+        'TK',
+        _totalGrossPremiumWithTax.toStringAsFixed(2)
+      ],
+    ],
+  );
 
+  // --- Footer ---
+  pw.Widget _buildFooterDetails() => pw.Row(
+    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+    children: [
+      pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text('Renewal No:'),
+          pw.Text(
+              '${moneyreceipt.issuedAgainst} / ${moneyreceipt.fireBill?.firePolicy.id?.toString() ?? "N/A"} / ${_formatDate(moneyreceipt.fireBill?.firePolicy.date)}'),
+          pw.Text('Checked by __________________'),
+        ],
+      ),
+      pw.Column(
+        children: [
+          pw.Text('Fully Re-insured with'),
+          pw.Text('Sadharan Bima Corporation'),
+        ],
+      ),
+      pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.end,
+        children: [
+          pw.Text('For & on behalf of'),
+          pw.Text('Green Insurance Com. Ltd.'),
+          pw.Text('Authorized Officer __________________'),
+        ],
+      ),
+    ],
+  );
 
+  pw.TextStyle _headerTextStyle() =>
+      pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold);
 
-
-  pw.TextStyle _headerTextStyle() {
-    return pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold);
-  }
-
+  // --- UI Section ---
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Center(child: Text('Fire Bill Cover Note')),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blue, Colors.green, Colors.orange, Colors.purple],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: const Text('Fire Bill Cover Note', textAlign: TextAlign.center),
+      // Using a modern, non-deprecated way to apply a gradient to the AppBar
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue, Colors.green, Colors.orange, Colors.purple],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildRow('Fire Bill No:', '${moneyreceipt.fireBill?.firePolicy.id ?? "N/A"}'),
-            _buildRow('Issue Date:', '${formatDate(moneyreceipt.fireBill?.firePolicy.date)}'),
-            _buildRow('Bank Name:', '${moneyreceipt.fireBill?.firePolicy.bankName ?? "N/A"}'),
-            _buildRow('Policyholder:', '${moneyreceipt.fireBill?.firePolicy.policyholder ?? "N/A"}'),
-            _buildRow('Address:', '${moneyreceipt.fireBill?.firePolicy.address ?? "N/A"}'),
-            _buildRow('Stock Insured:', '${moneyreceipt.fireBill?.firePolicy.stockInsured ?? "N/A"}'),
-            _buildRow('Sum Insured:', '${moneyreceipt.fireBill?.firePolicy.sumInsured ?? "N/A"} TK'),
-            _buildRow('Interest Insured:', '${moneyreceipt.fireBill?.firePolicy.interestInsured ?? "N/A"}'),
-            _buildRow('Coverage:', '${moneyreceipt.fireBill?.firePolicy.coverage ?? "N/A"}'),
-            _buildRow('Location:', '${moneyreceipt.fireBill?.firePolicy.location ?? "N/A"}'),
-            _buildRow('Construction:', '${moneyreceipt.fireBill?.firePolicy.construction ?? "N/A"}'),
-            _buildRow('Owner:', '${moneyreceipt.fireBill?.firePolicy.owner ?? "N/A"}'),
-            _buildRow('Used As:', '${moneyreceipt.fireBill?.firePolicy.usedAs ?? "N/A"}'),
-            _buildRow('Period From:', '${formatDate(moneyreceipt.fireBill?.firePolicy.periodFrom)}'),
-            _buildRow('Period To:', '${formatDate(moneyreceipt.fireBill?.firePolicy.periodTo)}'),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                final pdf = await _generatePdf(context);  // Generate PDF
-                final pdfBytes = await pdf.save(); // Get the bytes of the generated PDF
-
-                await Printing.sharePdf(
-                  bytes: pdfBytes,
-                  filename: 'fire_bill_covernote.pdf',
-                );
-              },
-              child: const Text('Download PDF'),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () async {
-                await Printing.layoutPdf(onLayout: (PdfPageFormat format) async {
-                  final pdf = await _generatePdf(context);  // Generate PDF
-                  return pdf.save();  // Return the saved bytes for printing
-                });
-              },
-              child: const Text('Print View'),
-            ),
-          ],
-        ),
+    ),
+    body: SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ..._infoRows(),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.download),
+            label: const Text('Download PDF'),
+            onPressed: () async {
+              final pdf = await _generatePdf(context);
+              // Printing.sharePdf is still a valid method for sharing the PDF bytes
+              await Printing.sharePdf(
+                bytes: await pdf.save(),
+                filename: 'fire_bill_covernote.pdf',
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.print),
+            label: const Text('Print View'),
+            onPressed: () async {
+              // Printing.layoutPdf is the modern way for printing on-the-fly
+              await Printing.layoutPdf(
+                onLayout: (format) async => (await _generatePdf(context)).save(),
+              );
+            },
+          ),
+        ],
       ),
-    );
+    ),
+  );
+
+  List<Widget> _infoRows() {
+    final policy = moneyreceipt.fireBill?.firePolicy;
+    return [
+      _buildRow('Fire Bill No:', policy?.id?.toString() ?? "N/A"),
+      _buildRow('Issue Date:', _formatDate(policy?.date)),
+      _buildRow('Bank Name:', policy?.bankName ?? "N/A"),
+      _buildRow('Policyholder:', policy?.policyholder ?? "N/A"),
+      _buildRow('Address:', policy?.address ?? "N/A"),
+      _buildRow('Stock Insured:', policy?.stockInsured ?? "N/A"),
+      _buildRow('Sum Insured:', '${policy?.sumInsured ?? "N/A"} TK'),
+      _buildRow('Interest Insured:', policy?.interestInsured ?? "N/A"),
+      _buildRow('Coverage:', policy?.coverage ?? "N/A"),
+      _buildRow('Location:', policy?.location ?? "N/A"),
+      _buildRow('Construction:', policy?.construction ?? "N/A"),
+      _buildRow('Owner:', policy?.owner ?? "N/A"),
+      _buildRow('Used As:', policy?.usedAs ?? "N/A"),
+      _buildRow('Period From:', _formatDate(policy?.periodFrom)),
+      _buildRow('Period To:', _formatDate(policy?.periodTo)),
+      // Adding premium details to the Flutter UI for completeness
+      const Divider(),
+      _buildRow('Net Premium:', '${_totalNetPremium.toStringAsFixed(2)} TK'),
+      _buildRow('Total Tax:', '${_totalTax.toStringAsFixed(2)} TK'),
+      _buildRow('Gross Premium:', '${_totalGrossPremiumWithTax.toStringAsFixed(2)} TK'),
+    ];
   }
 
-  Widget _buildRow(String title, String value) {
-    return Row(
+  Widget _buildRow(String title, String value) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(fontSize: _fontSize)),
-        Text(value, style: const TextStyle(fontSize: _fontSize)),
+        Text(title, style: const TextStyle(fontSize: _defaultFontSize, fontWeight: FontWeight.bold)),
+        Flexible(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: _defaultFontSize),
+            textAlign: TextAlign.right,
+          ),
+        ),
       ],
-    );
-  }
-
-  String formatDate(DateTime? date) {
-    return date != null ? DateFormat('dd-MM-yyyy').format(date) : "N/A";
-  }
-
-  double getTotalFire() {
-    if (moneyreceipt.fireBill?.fire != null && moneyreceipt.fireBill?.firePolicy.sumInsured != null) {
-      return (moneyreceipt.fireBill!.fire! / 100) * moneyreceipt.fireBill!.firePolicy.sumInsured!;
-    }
-    return 0.0;  // Return 0.0 if either is null
-  }
-
-  double getTotalRsd() {
-    if (moneyreceipt.fireBill?.rsd != null && moneyreceipt.fireBill?.firePolicy.sumInsured != null) {
-      return (moneyreceipt.fireBill!.rsd! / 100) * moneyreceipt.fireBill!.firePolicy.sumInsured!;
-    }
-    return 0.0;  // Return 0.0 if either is null
-  }
-
-  double getTotalPremium() {
-    return getTotalFire() + getTotalRsd();
-  }
-
-  double getTotalTax() {
-    return (getTotalPremium() * (moneyreceipt.fireBill?.tax ?? 0)) / 100;
-  }
-
-  double getTotalPremiumWithTax() {
-    return getTotalPremium() + getTotalTax();
-  }
-
-
-
+    ),
+  );
 }
