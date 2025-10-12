@@ -1,0 +1,696 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:general_insurance_management_system/page/head_office.dart';
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _carouselIndex = 0;
+  int _hoverIndex = -1;
+  int _selectedBottomIndex = 1; // Default to Home
+  late PageController _pageController;
+  Timer? _timer;
+
+  static const List<String> _images = [
+    'https://t3.ftcdn.net/jpg/13/71/18/42/240_F_1371184254_OEF4g1JYdSWwUQqRFxRDVIgFBGXmNcPe.jpg',
+    'https://www.shutterstock.com/image-photo/insurer-protecting-family-house-car-260nw-1295560780.jpg',
+    'https://png.pngtree.com/template/20220516/ourmid/pngtree-insurance-policy-banner-template-flat-design-illustration-editable-of-square-background-image_1571396.jpg',
+  ];
+
+  static const List<String> _texts = [
+    'Everyone has their future right in front of their eyes',
+    'It just needs to be organized according to a plan',
+    'It can be very useful in life',
+  ];
+
+  final List<Map<String, String>> _items = [
+    {"img": "https://cdn-icons-png.flaticon.com/128/1973/1973100.png", "title": "Fire Policy"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/1861/1861925.png", "title": "Fire Bill"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/3705/3705833.png", "title": "Fire Money\nReceipt"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/7562/7562243.png", "title": "Car Policy"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/1854/1854832.png", "title": "Car Bill"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/2595/2595934.png", "title": "Car Money\nReceipt"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/12245/12245214.png", "title": "Fire Policy\nReports"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/9621/9621072.png", "title": "Fire Bill\nReports"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/1055/1055644.png", "title": "Fire Money\nReceipt Reports"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/438/438036.png", "title": "Car Policy\nReports"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/2783/2783924.png", "title": "Car Bill\nReports"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/3270/3270753.png", "title": "Car Money\nReceipt Reports"},
+  ];
+
+  final List<String> _routes = [
+    '/viewfirepolicy',
+    '/viewfirebill',
+    '/viewfiremoneyreceipt',
+    '/viewcarpolicy',
+    '/viewcarbill',
+    '/viewcarmoneyreceipt',
+    '/viewpolicyreport',
+    '/viewfirereports',
+    '/viewfiremoneyreceiptreports',
+    '/viewcarreport',
+    '/viewcarreports',
+    '/viewcarmoneyreceiptreports',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _autoChangeCarousel();
+  }
+
+  void _autoChangeCarousel() {
+    _timer = Timer.periodic(const Duration(seconds: 4), (_) {
+      _carouselIndex = (_carouselIndex + 1) % _images.length;
+      _pageController.animateToPage(
+        _carouselIndex,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: _buildSmartAppBar(),
+      drawer: _buildSmartDrawer(),
+      body: _buildSmartBody(),
+      bottomNavigationBar: _buildSmartBottomNav(context),
+    );
+  }
+
+  AppBar _buildSmartAppBar() {
+    return AppBar(
+      title: const Text(
+        'Green General Insurance Company LTD',
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      centerTitle: true,
+      flexibleSpace: AnimatedContainer(
+        duration: const Duration(seconds: 2),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.purple, Colors.teal, Colors.green],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Drawer _buildSmartDrawer() {
+
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          const UserAccountsDrawerHeader(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blueAccent, Colors.greenAccent],
+              ),
+            ),
+            accountName: Text("Head Office"),
+            accountEmail: Text("sadiar.rahman970@gmail.com"),
+            currentAccountPicture: CircleAvatar(
+              backgroundImage: AssetImage('asset/images/avatar.jpg'),
+            ),
+          ),
+          _drawerItem(Icons.person, 'Profile', '/profile'),
+          _drawerItem(Icons.contact_mail, 'Contact Us', '/contact'),
+          _drawerItem(Icons.business, 'Head Office', '/headOffice'),
+          _drawerItem(Icons.location_city, 'Local Office', '/localOffice'),
+          const Divider(),
+          _drawerItem(Icons.login, 'Login', '/login'),
+          _drawerItem(Icons.logout, 'Logout', '/login'),
+        ],
+      ),
+    );
+  }
+
+  final List<Color> _cardColors = [
+    Colors.orange.shade100,
+    Colors.blue.shade100,
+    Colors.green.shade100,
+    Colors.purple.shade100,
+  ];
+
+
+  ListTile _drawerItem(IconData icon, String title, String route) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.teal),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      onTap: () => Navigator.pushNamed(context, route),
+    );
+  }
+
+  Widget _buildSmartBody() {
+    return Container(
+      color: Colors.green.withValues(alpha: 0.05),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildSmartCarousel(),
+          const SizedBox(height: 20),
+          _buildSmartGrid(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSmartCarousel() {
+    return Column(
+      children: [
+        SizedBox(
+          height: 180,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: _images.length,
+            onPageChanged: (i) => setState(() => _carouselIndex = i),
+            itemBuilder: (context, index) => AnimatedContainer(
+              duration: const Duration(milliseconds: 500),
+              margin: const EdgeInsets.symmetric(horizontal: 5),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                image: DecorationImage(
+                  image: NetworkImage(_images[index]),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Container(
+                alignment: Alignment.bottomCenter,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  gradient: LinearGradient(
+                    colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  ),
+                ),
+                child: Text(
+                  _texts[index],
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(_images.length, (i) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: _carouselIndex == i ? 16 : 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: _carouselIndex == i ? Colors.teal : Colors.grey,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSmartGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 1.1,
+      ),
+      itemCount: _items.length,
+      itemBuilder: (context, index) {
+        final item = _items[index];
+        return MouseRegion(
+          onEnter: (_) => setState(() => _hoverIndex = index),
+          onExit: (_) => setState(() => _hoverIndex = -1),
+          child: AnimatedScale(
+            scale: _hoverIndex == index ? 1.1 : 1.0,
+            duration: const Duration(milliseconds: 200),
+            child: Card(
+              color: _cardColors[index % _cardColors.length],
+              elevation: _hoverIndex == index ? 8 : 2,
+              shadowColor: Colors.tealAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(15),
+                onTap: () {
+                  if (index < _routes.length) {
+                    Navigator.pushNamed(context, _routes[index]);
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.network(item["img"]!, height: 40),
+                      const SizedBox(height: 8),
+                      Text(
+                        item["title"]!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSmartBottomNav(BuildContext context) {
+    final items = [
+      {'icon': Icons.location_city_rounded, 'label': 'Head Office'},
+      {'icon': Icons.home, 'label': 'Home'},
+      {'icon': Icons.notifications, 'label': 'Notifications'},
+    ];
+
+    return BottomNavigationBar(
+      currentIndex: _selectedBottomIndex,
+      onTap: (index) {
+        setState(() => _selectedBottomIndex = index);
+        if (index == 0) {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const HeadOffice()));
+        }
+      },
+      selectedItemColor: Colors.teal,
+      unselectedItemColor: Colors.grey,
+      items: items
+          .map(
+            (e) => BottomNavigationBarItem(
+          icon: Icon(e['icon'] as IconData),
+          label: e['label'] as String,
+        ),
+      )
+          .toList(),
+    );
+  }
+}
+========================fire money receupt=
+==========================================
+import 'package:flutter/material.dart';
+import 'package:general_insurance_management_system/firepolicy/create_fire_money_receipt.dart';
+import 'package:general_insurance_management_system/firepolicy/print_fire_money_receipt.dart';
+import 'package:general_insurance_management_system/firepolicy/update_fire_money_receipt.dart';
+import 'package:general_insurance_management_system/model/firemoneyreceipt_model.dart';
+import 'package:general_insurance_management_system/service/fire_money_receipt_service.dart';
+
+
+class AllFireMoneyReceiptView extends StatefulWidget {
+  const AllFireMoneyReceiptView({super.key});
+
+  @override
+  State<AllFireMoneyReceiptView> createState() =>
+      _AllFireMoneyReceiptViewState();
+}
+
+class _AllFireMoneyReceiptViewState extends State<AllFireMoneyReceiptView> {
+  late Future<List<FireMoneyReceiptModel>> fetchMoneyReceipts;
+  List<FireMoneyReceiptModel> allMoneyReceipts = [];
+  List<FireMoneyReceiptModel> filteredMoneyReceipts = [];
+  final TextStyle commonStyle = TextStyle(fontSize: 14, color: Colors.black);
+  final TextEditingController searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final service = MoneyReceiptService();
+    fetchMoneyReceipts = service.fetchMoneyReceipts().then((receipts) {
+      allMoneyReceipts = receipts;
+      filteredMoneyReceipts = receipts; // Initialize with all receipts
+      return receipts;
+    });
+  }
+
+  void filterReceipts(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        filteredMoneyReceipts = allMoneyReceipts;
+      });
+      return;
+    }
+
+    setState(() {
+      filteredMoneyReceipts = allMoneyReceipts.where((receipt) {
+        final bankName = receipt.fireBill?.firePolicy.bankName?.toLowerCase() ?? '';
+        final policyholder =
+            receipt.fireBill?.firePolicy.policyholder?.toLowerCase() ?? '';
+        final id =
+        receipt.id.toString(); // Assuming receipt has an 'id' property
+
+        return bankName.contains(query.toLowerCase()) ||
+            policyholder.contains(query.toLowerCase()) ||
+            id.contains(query);
+      }).toList();
+    });
+  }
+
+  Future<void> onDelete(int id) async {
+    final service = MoneyReceiptService();
+    try {
+      bool success = await service.deleteMoneyReceipt(id);
+      if (success) {
+        setState(() {
+          // Remove the deleted receipt from the list
+          filteredMoneyReceipts.removeWhere((receipt) => receipt.id == id);
+          allMoneyReceipts.removeWhere((receipt) => receipt.id == id);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Money Receipt Delete successfully')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting receipt: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Fire Money Receipt'),
+        centerTitle: true,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.yellow.withOpacity(0.8),
+                Colors.green.withOpacity(0.8),
+                Colors.orange.withOpacity(0.8),
+                Colors.red.withOpacity(0.8),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushNamed(context, '/home');
+          },
+        ),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            child: TextField(
+              controller: searchController,
+              onChanged: filterReceipts, // Correctly call the filter function
+              decoration: InputDecoration(
+                hintText: 'Search ',
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: const BorderSide(color: Colors.green, width: 1.0),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: const Icon(Icons.search, color: Colors.green),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: const BorderSide(color: Colors.green, width: 1.0),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<FireMoneyReceiptModel>>(
+              future: fetchMoneyReceipts,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No bills available'));
+                } else {
+                  return ListView.builder(
+                    itemCount: filteredMoneyReceipts.length,
+                    itemBuilder: (context, index) {
+                      final moneyreceipt = filteredMoneyReceipts[index];
+                      return Container(
+                        margin: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.red,
+                              Colors.orange,
+                              Colors.yellow,
+                              Colors.green,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          elevation: 4,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Bill No : ${moneyreceipt.fireBill?.firePolicy.id ?? 'N/A'}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  moneyreceipt.fireBill?.firePolicy.bankName ??
+                                      'Unnamed Policy',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  moneyreceipt.fireBill?.firePolicy.policyholder ??
+                                      'No policyholder available',
+                                  style: commonStyle,
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        moneyreceipt.fireBill?.firePolicy.address ??
+                                            'No address',
+                                        style: commonStyle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      'Tk ${moneyreceipt.fireBill?.firePolicy.sumInsured?.round() ?? 'No sum'}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                        'Net: Tk ${moneyreceipt.fireBill?.netPremium?? 'No data'}',
+                                        style: commonStyle),
+                                    Text(
+                                        'Tax: ${moneyreceipt.fireBill?.tax?? 'No data'}%',
+                                        style: commonStyle),
+                                    Text(
+                                        'Gross: Tk ${moneyreceipt.fireBill?.grossPremium?? 'No data'}',
+                                        style: commonStyle),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 125,
+                                      height: 30,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  PrintFireMoneyReceipt(
+                                                      moneyreceipt:
+                                                      moneyreceipt),
+                                            ),
+                                          );
+                                        },
+                                        child: Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                          children: const [
+                                            Icon(Icons.visibility),
+                                            SizedBox(width: 8),
+                                            Text('Print'),
+                                          ],
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue,
+                                          foregroundColor: Colors.black,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                            BorderRadius.circular(30),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                            horizontal: 24,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    SizedBox(
+                                      width: 160,
+                                      height: 30,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  PrintFireMoneyReceipt(
+                                                      moneyreceipt:
+                                                      moneyreceipt),
+                                            ),
+                                          );
+                                        },
+                                        child: Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                          children: const [
+                                            Icon(Icons.print),
+                                            SizedBox(width: 8),
+                                            Text('Cover Note'),
+                                          ],
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green,
+                                          foregroundColor: Colors.black,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                            BorderRadius.circular(30),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                            horizontal: 24,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.red),
+                                      onPressed: () {
+                                        if (moneyreceipt.id != null) {
+                                          onDelete(moneyreceipt
+                                              .id!); // Use the null assertion operator
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                                content: Text(
+                                                    'Receipt ID is null, cannot delete.')),
+                                          );
+                                        }
+                                      },
+                                    ),
+
+                                    IconButton(
+                                      icon: const Icon(Icons.edit, color: Colors.cyan),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => UpdateFireMoneyReceipt(moneyreceipt: moneyreceipt),
+                                          ),
+                                        );
+                                      },
+                                      tooltip: 'Edit ',
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const CreateFireMoneyReceipt()),
+          );
+        },
+        child: const Icon(Icons.add),
+        backgroundColor: Colors.blue,
+      ),
+    );
+  }
+}

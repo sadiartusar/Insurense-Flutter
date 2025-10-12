@@ -7,6 +7,8 @@ import 'package:general_insurance_management_system/page/admin_profile.dart';
 import 'package:general_insurance_management_system/page/home.dart';
 import 'package:general_insurance_management_system/page/login.dart';
 import 'package:general_insurance_management_system/page/registration.dart';
+import 'package:general_insurance_management_system/reports/fire_bill_reports.dart';
+import 'package:general_insurance_management_system/reports/fire_policy_reports.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,6 +35,8 @@ class _MyAppState extends State<MyApp> {
         '/viewfirepolicy': (context) => AllFirePolicyView(),
         '/viewfirebill': (context) => AllFireBillView(),
         '/viewfiremoneyreceipt': (context) => AllFireMoneyReceiptView(),
+        '/viewpolicyreport': (context) => FirePolicyReportPage(),
+        '/viewfirereports': (context) => FireBillReportPage(),
         // ✅ Keep your other routes as needed
       },
 

@@ -5,21 +5,27 @@ import 'package:general_insurance_management_system/firepolicy/update_fire_money
 import 'package:general_insurance_management_system/model/firemoneyreceipt_model.dart';
 import 'package:general_insurance_management_system/service/fire_money_receipt_service.dart';
 
-
 class AllFireMoneyReceiptView extends StatefulWidget {
   const AllFireMoneyReceiptView({super.key});
 
   @override
-  State<AllFireMoneyReceiptView> createState() =>
-      _AllFireMoneyReceiptViewState();
+  State<AllFireMoneyReceiptView> createState() => _AllFireMoneyReceiptViewState();
 }
 
 class _AllFireMoneyReceiptViewState extends State<AllFireMoneyReceiptView> {
   late Future<List<FireMoneyReceiptModel>> fetchMoneyReceipts;
   List<FireMoneyReceiptModel> allMoneyReceipts = [];
   List<FireMoneyReceiptModel> filteredMoneyReceipts = [];
-  final TextStyle commonStyle = TextStyle(fontSize: 14, color: Colors.black);
   final TextEditingController searchController = TextEditingController();
+
+  // Responsive helper
+  double responsiveSize(BuildContext context, double baseSize) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < 360) return baseSize * 0.8; // very small phones
+    if (screenWidth < 480) return baseSize * 0.9; // small phones
+    if (screenWidth < 600) return baseSize;       // normal phones
+    return baseSize * 1.1;                        // tablets & large screens
+  }
 
   @override
   void initState() {
@@ -27,27 +33,21 @@ class _AllFireMoneyReceiptViewState extends State<AllFireMoneyReceiptView> {
     final service = MoneyReceiptService();
     fetchMoneyReceipts = service.fetchMoneyReceipts().then((receipts) {
       allMoneyReceipts = receipts;
-      filteredMoneyReceipts = receipts; // Initialize with all receipts
+      filteredMoneyReceipts = receipts;
       return receipts;
     });
   }
 
   void filterReceipts(String query) {
     if (query.isEmpty) {
-      setState(() {
-        filteredMoneyReceipts = allMoneyReceipts;
-      });
+      setState(() => filteredMoneyReceipts = allMoneyReceipts);
       return;
     }
-
     setState(() {
       filteredMoneyReceipts = allMoneyReceipts.where((receipt) {
         final bankName = receipt.fireBill?.firePolicy.bankName?.toLowerCase() ?? '';
-        final policyholder =
-            receipt.fireBill?.firePolicy.policyholder?.toLowerCase() ?? '';
-        final id =
-        receipt.id.toString(); // Assuming receipt has an 'id' property
-
+        final policyholder = receipt.fireBill?.firePolicy.policyholder?.toLowerCase() ?? '';
+        final id = receipt.id.toString();
         return bankName.contains(query.toLowerCase()) ||
             policyholder.contains(query.toLowerCase()) ||
             id.contains(query);
@@ -61,26 +61,46 @@ class _AllFireMoneyReceiptViewState extends State<AllFireMoneyReceiptView> {
       bool success = await service.deleteMoneyReceipt(id);
       if (success) {
         setState(() {
-          // Remove the deleted receipt from the list
           filteredMoneyReceipts.removeWhere((receipt) => receipt.id == id);
           allMoneyReceipts.removeWhere((receipt) => receipt.id == id);
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Money Receipt Delete successfully')),
+          SnackBar(
+            content: Text(
+              'Money Receipt Deleted successfully',
+              style: TextStyle(fontSize: responsiveSize(context, 13)),
+            ),
+          ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting receipt: $e')),
+        SnackBar(
+          content: Text(
+            'Error deleting receipt: $e',
+            style: TextStyle(fontSize: responsiveSize(context, 13)),
+          ),
+        ),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final commonStyle = TextStyle(
+      fontSize: responsiveSize(context, 13),
+      color: Colors.black,
+    );
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fire Money Receipt'),
+        title: Text(
+          'Fire Money Receipt',
+          style: TextStyle(
+            fontSize: responsiveSize(context, 18),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
         flexibleSpace: Container(
           decoration: BoxDecoration(
@@ -103,266 +123,261 @@ class _AllFireMoneyReceiptViewState extends State<AllFireMoneyReceiptView> {
           },
         ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-            child: TextField(
-              controller: searchController,
-              onChanged: filterReceipts, // Correctly call the filter function
-              decoration: InputDecoration(
-                hintText: 'Search ',
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                  borderSide: const BorderSide(color: Colors.green, width: 1.0),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                prefixIcon: const Icon(Icons.search, color: Colors.green),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                  borderSide: const BorderSide(color: Colors.green, width: 1.0),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: responsiveSize(context, 8),
+                vertical: responsiveSize(context, 5),
+              ),
+              child: TextField(
+                controller: searchController,
+                onChanged: filterReceipts,
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  hintStyle: TextStyle(fontSize: responsiveSize(context, 14)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                    borderSide: const BorderSide(color: Colors.green, width: 1.0),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: const Icon(Icons.search, color: Colors.green),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                    borderSide: const BorderSide(color: Colors.green, width: 1.0),
+                  ),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: FutureBuilder<List<FireMoneyReceiptModel>>(
-              future: fetchMoneyReceipts,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No bills available'));
-                } else {
-                  return ListView.builder(
-                    itemCount: filteredMoneyReceipts.length,
-                    itemBuilder: (context, index) {
-                      final moneyreceipt = filteredMoneyReceipts[index];
-                      return Container(
-                        margin: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.red,
-                              Colors.orange,
-                              Colors.yellow,
-                              Colors.green,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
-                        child: Card(
-                          shape: RoundedRectangleBorder(
+            Expanded(
+              child: FutureBuilder<List<FireMoneyReceiptModel>>(
+                future: fetchMoneyReceipts,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No bills available'));
+                  } else {
+                    return ListView.builder(
+                      itemCount: filteredMoneyReceipts.length,
+                      itemBuilder: (context, index) {
+                        final moneyreceipt = filteredMoneyReceipts[index];
+                        return Container(
+                          margin: EdgeInsets.all(responsiveSize(context, 6)),
+                          decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                          ),
-                          elevation: 4,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Bill No : ${moneyreceipt.fireBill?.firePolicy.id ?? 'N/A'}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  moneyreceipt.fireBill?.firePolicy.bankName ??
-                                      'Unnamed Policy',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  moneyreceipt.fireBill?.firePolicy.policyholder ??
-                                      'No policyholder available',
-                                  style: commonStyle,
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        moneyreceipt.fireBill?.firePolicy.address ??
-                                            'No address',
-                                        style: commonStyle,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      'Tk ${moneyreceipt.fireBill?.firePolicy.sumInsured?.round() ?? 'No sum'}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                        'Net: Tk ${moneyreceipt.fireBill?.netPremium?? 'No data'}',
-                                        style: commonStyle),
-                                    Text(
-                                        'Tax: ${moneyreceipt.fireBill?.tax?? 'No data'}%',
-                                        style: commonStyle),
-                                    Text(
-                                        'Gross: Tk ${moneyreceipt.fireBill?.grossPremium?? 'No data'}',
-                                        style: commonStyle),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 125,
-                                      height: 30,
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  PrintFireMoneyReceipt(
-                                                      moneyreceipt:
-                                                      moneyreceipt),
-                                            ),
-                                          );
-                                        },
-                                        child: Row(
-                                          mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                          children: const [
-                                            Icon(Icons.visibility),
-                                            SizedBox(width: 8),
-                                            Text('Print'),
-                                          ],
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.blue,
-                                          foregroundColor: Colors.black,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                            BorderRadius.circular(30),
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 12,
-                                            horizontal: 24,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    SizedBox(
-                                      width: 160,
-                                      height: 30,
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  PrintFireMoneyReceipt(
-                                                      moneyreceipt:
-                                                      moneyreceipt),
-                                            ),
-                                          );
-                                        },
-                                        child: Row(
-                                          mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                          children: const [
-                                            Icon(Icons.print),
-                                            SizedBox(width: 8),
-                                            Text('Cover Note'),
-                                          ],
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.green,
-                                          foregroundColor: Colors.black,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                            BorderRadius.circular(30),
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 12,
-                                            horizontal: 24,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete,
-                                          color: Colors.red),
-                                      onPressed: () {
-                                        if (moneyreceipt.id != null) {
-                                          onDelete(moneyreceipt
-                                              .id!); // Use the null assertion operator
-                                        } else {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                                content: Text(
-                                                    'Receipt ID is null, cannot delete.')),
-                                          );
-                                        }
-                                      },
-                                    ),
-
-                                    IconButton(
-                                      icon: const Icon(Icons.edit, color: Colors.cyan),
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => UpdateFireMoneyReceipt(moneyreceipt: moneyreceipt),
-                                          ),
-                                        );
-                                      },
-                                      tooltip: 'Edit ',
-                                    ),
-                                  ],
-                                ),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.red,
+                                Colors.orange,
+                                Colors.yellow,
+                                Colors.green,
                               ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  );
-                }
-              },
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: MediaQuery.of(context).size.width * 0.95,
+                              ),
+                              child: Card(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                elevation: 4,
+                                child: Padding(
+                                  padding: EdgeInsets.all(responsiveSize(context, 10)),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Bill No : ${moneyreceipt.fireBill?.firePolicy.id ?? 'N/A'}',
+                                        style: TextStyle(
+                                          fontSize: responsiveSize(context, 13),
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue,
+                                        ),
+                                      ),
+                                      SizedBox(height: responsiveSize(context, 5)),
+                                      Text(
+                                        moneyreceipt.fireBill?.firePolicy.bankName ?? 'Unnamed Policy',
+                                        style: TextStyle(
+                                          fontSize: responsiveSize(context, 15),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: responsiveSize(context, 5)),
+                                      Text(
+                                        moneyreceipt.fireBill?.firePolicy.policyholder ?? 'No policyholder available',
+                                        style: commonStyle,
+                                        softWrap: true,
+                                        overflow: TextOverflow.visible,
+                                      ),
+                                      SizedBox(height: responsiveSize(context, 5)),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              moneyreceipt.fireBill?.firePolicy.address ?? 'No address',
+                                              style: commonStyle,
+                                              softWrap: true,
+                                              overflow: TextOverflow.visible,
+                                            ),
+                                          ),
+                                          SizedBox(width: responsiveSize(context, 6)),
+                                          Text(
+                                            'Tk ${moneyreceipt.fireBill?.firePolicy.sumInsured?.round() ?? 'No sum'}',
+                                            style: TextStyle(
+                                              fontSize: responsiveSize(context, 13),
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.green,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: responsiveSize(context, 5)),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text('Net: Tk ${moneyreceipt.fireBill?.netPremium ?? 'No data'}', style: commonStyle),
+                                          Text('Tax: ${moneyreceipt.fireBill?.tax ?? 'No data'}%', style: commonStyle),
+                                          Text('Gross: Tk ${moneyreceipt.fireBill?.grossPremium ?? 'No data'}', style: commonStyle),
+                                        ],
+                                      ),
+                                      SizedBox(height: responsiveSize(context, 10)),
+                                      Wrap(
+                                        spacing: responsiveSize(context, 6),
+                                        runSpacing: responsiveSize(context, 6),
+                                        children: [
+                                          SizedBox(
+                                            width: responsiveSize(context, 100),
+                                            height: responsiveSize(context, 28),
+                                            child: ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => PrintFireMoneyReceipt(
+                                                      moneyreceipt: moneyreceipt,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.blue,
+                                                foregroundColor: Colors.black,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(30),
+                                                ),
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical: responsiveSize(context, 6),
+                                                  horizontal: responsiveSize(context, 10),
+                                                ),
+                                                textStyle: TextStyle(fontSize: responsiveSize(context, 12)),
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: const [
+                                                  Icon(Icons.visibility),
+                                                  SizedBox(width: 5),
+                                                  Text('Print'),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: responsiveSize(context, 140),
+                                            height: responsiveSize(context, 28),
+                                            child: ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => PrintFireMoneyReceipt(
+                                                      moneyreceipt: moneyreceipt,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.green,
+                                                foregroundColor: Colors.black,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(30),
+                                                ),
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical: responsiveSize(context, 6),
+                                                  horizontal: responsiveSize(context, 10),
+                                                ),
+                                                textStyle: TextStyle(fontSize: responsiveSize(context, 12)),
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: const [
+                                                  Icon(Icons.print),
+                                                  SizedBox(width: 5),
+                                                  Text('Cover Note'),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete, color: Colors.red),
+                                            onPressed: () {
+                                              if (moneyreceipt.id != null) {
+                                                onDelete(moneyreceipt.id!);
+                                              }
+                                            },
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.edit, color: Colors.cyan),
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => UpdateFireMoneyReceipt(
+                                                    moneyreceipt: moneyreceipt,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            tooltip: 'Edit',
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => const CreateFireMoneyReceipt()),
+            MaterialPageRoute(builder: (context) => const CreateFireMoneyReceipt()),
           );
         },
-        child: const Icon(Icons.add),
         backgroundColor: Colors.blue,
+        child: const Icon(Icons.add),
       ),
     );
   }

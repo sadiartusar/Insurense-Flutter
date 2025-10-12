@@ -29,6 +29,8 @@ class PrintFireMoneyReceipt extends StatelessWidget {
 
   double get _totalGrossPremiumWithTax => _totalNetPremium + _totalTax;
 
+  double get _monthlyPayableAmount=> _totalGrossPremiumWithTax/12;
+
   // --- Date Formatting Helper ---
   String _formatDate(DateTime? date) =>
       date != null ? DateFormat('dd-MM-yyyy').format(date) : "N/A";
@@ -249,6 +251,12 @@ class PrintFireMoneyReceipt extends StatelessWidget {
         'TK',
         _totalGrossPremiumWithTax.toStringAsFixed(2)
       ],
+      [
+        'Monthly Payable Amount',
+        '',
+        'TK',
+        _monthlyPayableAmount.toStringAsFixed(2)
+      ],
     ],
   );
 
@@ -359,6 +367,7 @@ class PrintFireMoneyReceipt extends StatelessWidget {
       _buildRow('Net Premium:', '${_totalNetPremium.toStringAsFixed(2)} TK'),
       _buildRow('Total Tax:', '${_totalTax.toStringAsFixed(2)} TK'),
       _buildRow('Gross Premium:', '${_totalGrossPremiumWithTax.toStringAsFixed(2)} TK'),
+      _buildRow('Monthly Payable Amount:','${_monthlyPayableAmount.toStringAsFixed(2)} TK')
     ];
   }
 

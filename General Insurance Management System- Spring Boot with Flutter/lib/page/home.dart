@@ -17,7 +17,7 @@ class _HomePageState extends State<HomePage> {
   Timer? _timer;
 
   static const List<String> _images = [
-    'https://www.shutterstock.com/image-photo/family-house-car-protected-by-260nw-1502368643.jpg',
+    'https://t3.ftcdn.net/jpg/13/71/18/42/240_F_1371184254_OEF4g1JYdSWwUQqRFxRDVIgFBGXmNcPe.jpg',
     'https://www.shutterstock.com/image-photo/insurer-protecting-family-house-car-260nw-1295560780.jpg',
     'https://png.pngtree.com/template/20220516/ourmid/pngtree-insurance-policy-banner-template-flat-design-illustration-editable-of-square-background-image_1571396.jpg',
   ];
@@ -83,21 +83,33 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  // 📱 Responsive font/icon scaling
+  double responsiveSize(BuildContext context, double baseSize) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < 360) return baseSize * 0.8;
+    if (screenWidth < 480) return baseSize * 0.9;
+    if (screenWidth < 600) return baseSize * 1.0;
+    return baseSize * 1.1;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildSmartAppBar(),
-      drawer: _buildSmartDrawer(),
-      body: _buildSmartBody(),
+      appBar: _buildSmartAppBar(context),
+      drawer: _buildSmartDrawer(context),
+      body: SafeArea(child: _buildSmartBody(context)),
       bottomNavigationBar: _buildSmartBottomNav(context),
     );
   }
 
-  AppBar _buildSmartAppBar() {
+  AppBar _buildSmartAppBar(BuildContext context) {
     return AppBar(
-      title: const Text(
+      title: Text(
         'Green General Insurance Company LTD',
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          fontSize: responsiveSize(context, 18),
+          fontWeight: FontWeight.bold,
+        ),
       ),
       centerTitle: true,
       flexibleSpace: AnimatedContainer(
@@ -113,8 +125,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Drawer _buildSmartDrawer() {
-
+  Drawer _buildSmartDrawer(BuildContext context) {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -131,45 +142,58 @@ class _HomePageState extends State<HomePage> {
               backgroundImage: AssetImage('asset/images/avatar.jpg'),
             ),
           ),
-          _drawerItem(Icons.person, 'Profile', '/profile'),
-          _drawerItem(Icons.contact_mail, 'Contact Us', '/contact'),
-          _drawerItem(Icons.business, 'Head Office', '/headOffice'),
-          _drawerItem(Icons.location_city, 'Local Office', '/localOffice'),
+          _drawerItem(context, Icons.person, 'Profile', '/profile'),
+          _drawerItem(context, Icons.contact_mail, 'Contact Us', '/contact'),
+          _drawerItem(context, Icons.business, 'Head Office', '/headOffice'),
+          _drawerItem(context, Icons.location_city, 'Local Office', '/localOffice'),
           const Divider(),
-          _drawerItem(Icons.login, 'Login', '/login'),
-          _drawerItem(Icons.logout, 'Logout', '/login'),
+          _drawerItem(context, Icons.login, 'Login', '/login'),
+          _drawerItem(context, Icons.logout, 'Logout', '/login'),
         ],
       ),
     );
   }
 
-  ListTile _drawerItem(IconData icon, String title, String route) {
+  final List<Color> _cardColors = [
+    Colors.orangeAccent.shade100,
+    Colors.blueAccent.shade100,
+    Colors.greenAccent.shade100,
+    Colors.purpleAccent.shade100,
+  ];
+
+  ListTile _drawerItem(BuildContext context, IconData icon, String title, String route) {
     return ListTile(
-      leading: Icon(icon, color: Colors.teal),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      leading: Icon(icon, color: Colors.teal, size: responsiveSize(context, 22)),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: responsiveSize(context, 14),
+        ),
+      ),
       onTap: () => Navigator.pushNamed(context, route),
     );
   }
 
-  Widget _buildSmartBody() {
+  Widget _buildSmartBody(BuildContext context) {
     return Container(
       color: Colors.green.withValues(alpha: 0.05),
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(responsiveSize(context, 16)),
         children: [
-          _buildSmartCarousel(),
-          const SizedBox(height: 20),
-          _buildSmartGrid(),
+          _buildSmartCarousel(context),
+          SizedBox(height: responsiveSize(context, 20)),
+          _buildSmartGrid(context),
         ],
       ),
     );
   }
 
-  Widget _buildSmartCarousel() {
+  Widget _buildSmartCarousel(BuildContext context) {
     return Column(
       children: [
         SizedBox(
-          height: 180,
+          height: responsiveSize(context, 180),
           child: PageView.builder(
             controller: _pageController,
             itemCount: _images.length,
@@ -186,7 +210,7 @@ class _HomePageState extends State<HomePage> {
               ),
               child: Container(
                 alignment: Alignment.bottomCenter,
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(responsiveSize(context, 12)),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
                   gradient: LinearGradient(
@@ -197,9 +221,9 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: Text(
                   _texts[index],
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: responsiveSize(context, 14),
                     fontStyle: FontStyle.italic,
                     fontWeight: FontWeight.bold,
                   ),
@@ -229,7 +253,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildSmartGrid() {
+  Widget _buildSmartGrid(BuildContext context) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -249,6 +273,7 @@ class _HomePageState extends State<HomePage> {
             scale: _hoverIndex == index ? 1.1 : 1.0,
             duration: const Duration(milliseconds: 200),
             child: Card(
+              color: _cardColors[index % _cardColors.length],
               elevation: _hoverIndex == index ? 8 : 2,
               shadowColor: Colors.tealAccent,
               shape: RoundedRectangleBorder(
@@ -262,17 +287,21 @@ class _HomePageState extends State<HomePage> {
                   }
                 },
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: EdgeInsets.all(responsiveSize(context, 8)),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.network(item["img"]!, height: 40),
-                      const SizedBox(height: 8),
+                      Image.network(item["img"]!, height: responsiveSize(context, 40)),
+                      SizedBox(height: responsiveSize(context, 8)),
                       Text(
                         item["title"]!,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        style: TextStyle(
+                          fontSize: responsiveSize(context, 12),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -302,6 +331,9 @@ class _HomePageState extends State<HomePage> {
       },
       selectedItemColor: Colors.teal,
       unselectedItemColor: Colors.grey,
+      selectedFontSize: responsiveSize(context, 12),
+      unselectedFontSize: responsiveSize(context, 11),
+      iconSize: responsiveSize(context, 22),
       items: items
           .map(
             (e) => BottomNavigationBarItem(

@@ -90,7 +90,7 @@ class AdminProfile extends StatelessWidget {
             currentAccountPicture: CircleAvatar(
               backgroundImage: (photoUrl != null)
                   ? NetworkImage(photoUrl)
-                  : const AssetImage('assets/images/default_avatar.jpg') as ImageProvider,
+                  : const AssetImage('asset/images/avatar.jpg') as ImageProvider,
             ),
           ),
           _buildDrawerItem(context, Icons.person, "My Profile", () => Navigator.pop(context)),
