@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/model/firepolicy_model.dart';
 import 'package:general_insurance_management_system/service/firepolicy_service.dart';
-import 'package:intl/intl.dart'; // For formatting dates
-
+import 'package:intl/intl.dart';
 
 class FirePolicyReportPage extends StatefulWidget {
   @override
@@ -19,10 +18,10 @@ class _FirePolicyReportPageState extends State<FirePolicyReportPage> {
   DateTime? startDate;
   DateTime? endDate;
 
-  bool isLoading = true; // Track loading state
-  bool isError = false; // Track error state
+  bool isLoading = true;
+  bool isError = false;
 
-  double _buttonScale = 1.0; // For Button Animation
+  double _buttonScale = 1.0;
 
   @override
   void initState() {
@@ -34,7 +33,7 @@ class _FirePolicyReportPageState extends State<FirePolicyReportPage> {
     try {
       allPolicy = await FirePolicyService().fetchPolicies();
       setState(() {
-        filteredPolicy = allPolicy; // Initially show all bills
+        filteredPolicy = allPolicy;
         _updateStatistics();
         isLoading = false;
       });
@@ -43,7 +42,7 @@ class _FirePolicyReportPageState extends State<FirePolicyReportPage> {
         isLoading = false;
         isError = true;
       });
-      print('Error fetching bills: $e');
+      print('Error fetching policies: $e');
     }
   }
 
@@ -86,6 +85,9 @@ class _FirePolicyReportPageState extends State<FirePolicyReportPage> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width; // responsive width
+    final isSmallScreen = width < 600;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fire Policy Report'),
@@ -106,77 +108,127 @@ class _FirePolicyReportPageState extends State<FirePolicyReportPage> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(isSmallScreen ? 12.0 : 20.0),
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // Header Section (Date filter)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  AnimatedScale(
-                    duration: const Duration(milliseconds: 300),
-                    scale: _buttonScale,
-                    child: ElevatedButton(
-                      onPressed: isLoading ? null : () {
-                        setState(() {
-                          _buttonScale = 1.1;
-                        });
-                        _selectDateRange();
-                      },
-                      onHover: (isHovered) {
-                        setState(() {
-                          _buttonScale = isHovered ? 1.1 : 1.0;
-                        });
-                      },
-                      child: const Text('Date Wise Report'),
+                  Expanded(
+                    flex: isSmallScreen ? 1 : 0,
+                    child: AnimatedScale(
+                      duration: const Duration(milliseconds: 300),
+                      scale: _buttonScale,
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : _selectDateRange,
+                        onHover: (isHovered) {
+                          setState(() {
+                            _buttonScale = isHovered ? 1.1 : 1.0;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: isSmallScreen ? 8 : 16,
+                              vertical: isSmallScreen ? 10 : 14),
+                        ),
+                        child: const Text(
+                          'Date Wise Report',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
                   ),
                   if (startDate != null && endDate != null)
-                    Text(
-                      "From: ${DateFormat('yyyy-MM-dd').format(startDate!)} To: ${DateFormat('yyyy-MM-dd').format(endDate!)}",
-                      style: const TextStyle(fontSize: 14),
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Text(
+                          "From: ${DateFormat('yyyy-MM-dd').format(startDate!)}\nTo: ${DateFormat('yyyy-MM-dd').format(endDate!)}",
+                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                     ),
                 ],
               ),
               const SizedBox(height: 20),
-              isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : isError
-                  ? const Center(child: Text('Error fetching data.'))
-                  : filteredPolicy.isEmpty
-                  ? const Text('No policies found for the selected date range.')
-                  : Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+
+              // Loading or Error State
+              if (isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (isError)
+                const Center(child: Text('Error fetching data.'))
+              else if (filteredPolicy.isEmpty)
+                  const Text(
+                    'No policies found for the selected date range.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  )
+                else
+                  Column(
                     children: [
-                      _buildStatCard('Fire Policy', policyCount.toDouble(), Colors.blue),
-                      _buildStatCard('Total Sum Insured', totalSumInsurd, Colors.orange),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          SizedBox(
+                              width: isSmallScreen ? width * 0.9 : width * 0.45,
+                              child: _buildStatCard(
+                                  'Fire Policy', policyCount.toDouble(), Colors.blue)),
+                          SizedBox(
+                              width: isSmallScreen ? width * 0.9 : width * 0.45,
+                              child: _buildStatCard(
+                                  'Total Sum Insured', totalSumInsurd, Colors.orange)),
+                        ],
+                      ),
+                      const SizedBox(height: 30),
                     ],
                   ),
+
+              const SizedBox(height: 40),
+
+              // Navigation Buttons
+              Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () => Navigator.pushNamed(context, '/home'),
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: isSmallScreen ? 20 : 30,
+                          vertical: isSmallScreen ? 12 : 16),
+                    ),
+                    child: const Text(
+                      'Go to Home',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                  ),
                   const SizedBox(height: 20),
+                  if (startDate != null && endDate != null)
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          startDate = null;
+                          endDate = null;
+                          filteredPolicy = allPolicy;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey.shade700,
+                        padding: EdgeInsets.symmetric(
+                            horizontal: isSmallScreen ? 20 : 30,
+                            vertical: isSmallScreen ? 12 : 16),
+                      ),
+                      child: const Text(
+                        'Clear Date Filter',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ),
                 ],
               ),
-              const SizedBox(height: 200),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/home');
-                },
-                child: const Text('Go to Home', style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-              const SizedBox(height: 20),
-              if (startDate != null && endDate != null)
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      startDate = null;
-                      endDate = null;
-                      filteredPolicy = allPolicy; // Show all policies again
-                    });
-                  },
-                  child: const Text('Clear Date Filter'),
-                ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -185,61 +237,33 @@ class _FirePolicyReportPageState extends State<FirePolicyReportPage> {
   }
 
   Widget _buildStatCard(String title, double value, Color color) {
-    return Expanded(
-      child: MouseRegion(
-        onEnter: (_) {
-          setState(() {
-            // Shadow effect is removed as it's not used
-          });
-        },
-        onExit: (_) {
-          setState(() {
-            // Shadow effect is removed as it's not used
-          });
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(0.4),
-                offset: const Offset(0, 5),
-                blurRadius: 15,
-                spreadRadius: 3,
-              ),
-            ],
-          ),
-          child: Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    value.toStringAsFixed(2),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: color,
               ),
             ),
-          ),
+            const SizedBox(height: 8),
+            Text(
+              value.toStringAsFixed(2),
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ],
         ),
       ),
     );

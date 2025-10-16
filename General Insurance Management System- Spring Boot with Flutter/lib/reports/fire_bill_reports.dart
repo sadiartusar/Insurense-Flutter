@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/model/firebill_model.dart';
 import 'package:general_insurance_management_system/service/firebill_service.dart';
-
 import 'package:intl/intl.dart';
 import 'package:pie_chart/pie_chart.dart';
 
@@ -22,11 +21,11 @@ class _FireBillReportPageState extends State<FireBillReportPage> {
   DateTime? startDate;
   DateTime? endDate;
 
-  bool isLoading = true; // Track loading state
-  bool isError = false; // Track error state
+  bool isLoading = true;
+  bool isError = false;
 
   double _shadowScale = 1.0;
-  double _buttonScale = 1.0; // For Button Animation
+  double _buttonScale = 1.0;
 
   @override
   void initState() {
@@ -38,7 +37,7 @@ class _FireBillReportPageState extends State<FireBillReportPage> {
     try {
       allBills = await BillService().fetchAllFireBills();
       setState(() {
-        filteredBills = allBills; // Initially show all bills
+        filteredBills = allBills;
         _updateStatistics();
         isLoading = false;
       });
@@ -67,8 +66,7 @@ class _FireBillReportPageState extends State<FireBillReportPage> {
   }
 
   double calculateTotalGrossPremium() {
-    return filteredBills.fold(
-        0.0, (total, bill) => total + (bill.grossPremium ?? 0));
+    return filteredBills.fold(0.0, (total, bill) => total + (bill.grossPremium ?? 0));
   }
 
   _filterBillsByDateRange(DateTime start, DateTime end) {
@@ -101,6 +99,9 @@ class _FireBillReportPageState extends State<FireBillReportPage> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final isSmallScreen = width < 600;
+
     Map<String, double> dataMap = {
       "Net Premium": totalNetPremium,
       "Tax (15%)": totalTax,
@@ -127,112 +128,163 @@ class _FireBillReportPageState extends State<FireBillReportPage> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(isSmallScreen ? 12.0 : 20.0),
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // 🔹 Date Filter Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  AnimatedScale(
-                    duration: const Duration(milliseconds: 300),
-                    scale: _buttonScale,
-                    child: ElevatedButton(
-                      onPressed: isLoading ? null : () {
-                        setState(() {
-                          _buttonScale = 1.1;
-                        });
-                        _selectDateRange();
-                      },
-                      onHover: (isHovered) {
-                        setState(() {
-                          _buttonScale = isHovered ? 1.1 : 1.0;
-                        });
-                      },
-                      child: const Text('Date Wise Report'),
-                    ),
-                  ),
-                  if (startDate != null && endDate != null)
-                    Text(
-                      "From: ${DateFormat('yyyy-MM-dd').format(startDate!)} To: ${DateFormat('yyyy-MM-dd').format(endDate!)}",
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : isError
-                  ? const Center(child: Text('Error fetching data.'))
-                  : filteredBills.isEmpty
-                  ? const Text('No bills found for the selected date range.')
-                  : Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildStatCard('Bills', billCount.toDouble(), Colors.blue),
-                      _buildStatCard('Net Premium', totalNetPremium, Colors.orange),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildStatCard('Tax (15%)', totalTax, Colors.red),
-                      _buildStatCard('Gross Premium', totalGrossPremium, Colors.green),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Premium Distribution',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 20),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 500),
-                    child: MouseRegion(
-                      onEnter: (_) {
-                        setState(() {
-                          _shadowScale = 1.1; // Increase scale on hover
-                        });
-                      },
-                      onExit: (_) {
-                        setState(() {
-                          _shadowScale = 1.0; // Reset scale when the mouse leaves
-                        });
-                      },
-                      child: PieChart(
-                        key: ValueKey(_shadowScale),
-                        dataMap: dataMap,
-                        animationDuration: const Duration(milliseconds: 800),
-                        chartType: ChartType.disc,
-                        chartRadius: MediaQuery.of(context).size.width / 2.5,
-                        colorList: [Colors.orange, Colors.red, Colors.green],
-                        chartValuesOptions: const ChartValuesOptions(
-                          showChartValuesInPercentage: true,
+                  Expanded(
+                    flex: isSmallScreen ? 1 : 0,
+                    child: AnimatedScale(
+                      duration: const Duration(milliseconds: 300),
+                      scale: _buttonScale,
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : _selectDateRange,
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: isSmallScreen ? 10 : 20,
+                              vertical: isSmallScreen ? 10 : 14),
                         ),
-                        legendOptions: const LegendOptions(
-                          showLegends: true,
-                          legendPosition: LegendPosition.right,
+                        child: const Text(
+                          'Date Wise Report',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
                   ),
+                  if (startDate != null && endDate != null)
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Text(
+                          "From: ${DateFormat('yyyy-MM-dd').format(startDate!)}\nTo: ${DateFormat('yyyy-MM-dd').format(endDate!)}",
+                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
                 ],
               ),
-              const SizedBox(height: 100),
-              AnimatedScale(
-                duration: const Duration(milliseconds: 300),
-                scale: _buttonScale,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/home');
-                  },
-                  child: const Text('Go to Home', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ),
               const SizedBox(height: 20),
+
+              // 🔹 Loading / Error / Data Display
+              if (isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (isError)
+                const Center(child: Text('Error fetching data.'))
+              else if (filteredBills.isEmpty)
+                  const Text(
+                    'No bills found for the selected date range.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  )
+                else
+                  Column(
+                    children: [
+                      // 🔸 Responsive Stat Cards
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          SizedBox(
+                              width: isSmallScreen ? width * 0.9 : width * 0.45,
+                              child: _buildStatCard('Bills', billCount.toDouble(), Colors.blue)),
+                          SizedBox(
+                              width: isSmallScreen ? width * 0.9 : width * 0.45,
+                              child: _buildStatCard('Net Premium', totalNetPremium, Colors.orange)),
+                          SizedBox(
+                              width: isSmallScreen ? width * 0.9 : width * 0.45,
+                              child: _buildStatCard('Tax (15%)', totalTax, Colors.red)),
+                          SizedBox(
+                              width: isSmallScreen ? width * 0.9 : width * 0.45,
+                              child: _buildStatCard('Gross Premium', totalGrossPremium, Colors.green)),
+                        ],
+                      ),
+                      const SizedBox(height: 30),
+
+                      // 🔸 Pie Chart Section
+                      const Text(
+                        'Premium Distribution',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.grey.shade100,
+                        ),
+                        child: PieChart(
+                          dataMap: dataMap,
+                          animationDuration: const Duration(milliseconds: 800),
+                          chartType: ChartType.disc,
+                          chartRadius: isSmallScreen
+                              ? width / 2.2
+                              : width / 3, // Adjust chart size for small screens
+                          colorList: [Colors.orange, Colors.red, Colors.green],
+                          chartValuesOptions: const ChartValuesOptions(
+                            showChartValuesInPercentage: true,
+                            decimalPlaces: 1,
+                          ),
+                          legendOptions: LegendOptions(
+                            showLegends: true,
+                            legendPosition: isSmallScreen
+                                ? LegendPosition.bottom
+                                : LegendPosition.right,
+                            legendTextStyle: TextStyle(
+                                fontSize: isSmallScreen ? 12 : 14,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+              const SizedBox(height: 40),
+
+              // 🔹 Navigation Buttons
+              Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () => Navigator.pushNamed(context, '/home'),
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: isSmallScreen ? 24 : 30,
+                          vertical: isSmallScreen ? 12 : 16),
+                    ),
+                    child: const Text(
+                      'Go to Home',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  if (startDate != null && endDate != null)
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          startDate = null;
+                          endDate = null;
+                          filteredBills = allBills;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey.shade700,
+                        padding: EdgeInsets.symmetric(
+                            horizontal: isSmallScreen ? 24 : 30,
+                            vertical: isSmallScreen ? 12 : 16),
+                      ),
+                      child: const Text(
+                        'Clear Date Filter',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ),
+                ],
+              ),
             ],
           ),
         ),
@@ -240,63 +292,35 @@ class _FireBillReportPageState extends State<FireBillReportPage> {
     );
   }
 
+  // 🔸 Responsive Stat Card Widget
   Widget _buildStatCard(String title, double value, Color color) {
-    return Expanded(
-      child: MouseRegion(
-        onEnter: (_) {
-          setState(() {
-            _shadowScale = 1.1;
-          });
-        },
-        onExit: (_) {
-          setState(() {
-            _shadowScale = 1.0;
-          });
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          transform: Matrix4.identity()..scale(_shadowScale, _shadowScale),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(0.4),
-                offset: const Offset(0, 5),
-                blurRadius: 15,
-                spreadRadius: 3,
-              ),
-            ],
-          ),
-          child: Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    value.toStringAsFixed(2),
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: color,
               ),
             ),
-          ),
+            const SizedBox(height: 8),
+            Text(
+              value.toStringAsFixed(2),
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ],
         ),
       ),
     );
