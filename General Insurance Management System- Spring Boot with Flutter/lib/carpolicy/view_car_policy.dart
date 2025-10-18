@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:general_insurance_management_system/carpolicy/all_car_policy_details.dart';
+import 'package:general_insurance_management_system/carpolicy/create_car_policy.dart';
+import 'package:general_insurance_management_system/carpolicy/update_car_policy.dart';
 import 'package:general_insurance_management_system/firepolicy/create_firepolicy.dart';
 import 'package:general_insurance_management_system/model/carpolicy_model.dart';
 import 'package:general_insurance_management_system/service/carpolicy_service.dart';
@@ -207,7 +210,7 @@ class _AllCarPolicyViewState extends State<AllCarPolicyView>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const CreateFirePolicy()),
+          MaterialPageRoute(builder: (context) => const CreateCarPolicy()),
         ),
         icon: const Icon(Icons.add),
         label: const Text('New Policy'),
@@ -290,7 +293,7 @@ class _AllCarPolicyViewState extends State<AllCarPolicyView>
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => AllFirePolicyDetails(policy: policy)),
+                    builder: (context) => AllCarPolicyDetails(policy: policy)),
               ),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
@@ -338,7 +341,7 @@ class _AllCarPolicyViewState extends State<AllCarPolicyView>
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    AllFirePolicyDetails(policy: policy)),
+                                    AllCarPolicyDetails(policy: policy)),
                           ),
                         ),
                         IconButton(
@@ -347,7 +350,7 @@ class _AllCarPolicyViewState extends State<AllCarPolicyView>
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => UpdateFirePolicy(policy: policy),
+                                builder: (context) => UpdateCarPolicy(policy: policy),
                               ),
                             );
                           },

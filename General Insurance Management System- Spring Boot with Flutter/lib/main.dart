@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:general_insurance_management_system/carpolicy/view_car_policy.dart';
 import 'package:general_insurance_management_system/firepolicy/all_fire_bill_list_view.dart';
 import 'package:general_insurance_management_system/firepolicy/view_fire_bill.dart';
 import 'package:general_insurance_management_system/firepolicy/view_fire_money_receipt.dart';
@@ -8,6 +9,7 @@ import 'package:general_insurance_management_system/page/home.dart';
 import 'package:general_insurance_management_system/page/login.dart';
 import 'package:general_insurance_management_system/page/registration.dart';
 import 'package:general_insurance_management_system/reports/fire_bill_reports.dart';
+import 'package:general_insurance_management_system/reports/fire_money_receipt_report.dart';
 import 'package:general_insurance_management_system/reports/fire_policy_reports.dart';
 
 void main() {
@@ -37,6 +39,8 @@ class _MyAppState extends State<MyApp> {
         '/viewfiremoneyreceipt': (context) => AllFireMoneyReceiptView(),
         '/viewpolicyreport': (context) => FirePolicyReportPage(),
         '/viewfirereports': (context) => FireBillReportPage(),
+        '/viewcarpolicy':(context) =>AllCarPolicyView(),
+        '/viewfiremoneyreceiptreports': (context) =>FireMoneyReceiptReportPage()
         // ✅ Keep your other routes as needed
       },
 

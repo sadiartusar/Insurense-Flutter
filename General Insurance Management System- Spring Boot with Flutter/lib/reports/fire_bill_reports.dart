@@ -116,10 +116,12 @@ class _FireBillReportPageState extends State<FireBillReportPage> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.yellow.withOpacity(0.8),
+                Colors.purple.withOpacity(0.8),
                 Colors.green.withOpacity(0.8),
                 Colors.orange.withOpacity(0.8),
                 Colors.red.withOpacity(0.8),
+                Colors.deepPurpleAccent.withOpacity(0.8),
+                Colors.limeAccent.withOpacity(0.8),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
