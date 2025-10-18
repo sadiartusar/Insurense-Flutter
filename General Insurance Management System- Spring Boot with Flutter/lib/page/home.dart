@@ -29,8 +29,8 @@ class _HomePageState extends State<HomePage> {
   ];
 
   final List<Map<String, String>> _items = [
-    {"img": "https://cdn-icons-png.flaticon.com/128/1973/1973100.png", "title": "Fire Policy"},
-    {"img": "https://cdn-icons-png.flaticon.com/128/1861/1861925.png", "title": "Fire Bill"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/7901/7901731.png", "title": "Fire Policy"},
+    {"img": "https://cdn-icons-png.flaticon.com/128/10503/10503975.png", "title": "Fire Bill"},
     {"img": "https://cdn-icons-png.flaticon.com/128/3705/3705833.png", "title": "Fire Money\nReceipt"},
     {"img": "https://cdn-icons-png.flaticon.com/128/7562/7562243.png", "title": "Car Policy"},
     {"img": "https://cdn-icons-png.flaticon.com/128/1854/1854832.png", "title": "Car Bill"},
@@ -58,21 +58,31 @@ class _HomePageState extends State<HomePage> {
     '/viewcarmoneyreceiptreports',
   ];
 
+  final List<Color> _cardColors = [
+    Colors.orangeAccent.shade100,
+    Colors.blueAccent.shade100,
+    Colors.greenAccent.shade100,
+    Colors.purpleAccent.shade100,
+  ];
+
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    // 💡 Added viewportFraction for a modern "peek" effect
+    _pageController = PageController(viewportFraction: 0.9);
     _autoChangeCarousel();
   }
 
   void _autoChangeCarousel() {
     _timer = Timer.periodic(const Duration(seconds: 4), (_) {
       _carouselIndex = (_carouselIndex + 1) % _images.length;
-      _pageController.animateToPage(
-        _carouselIndex,
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeInOut,
-      );
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          _carouselIndex,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOut,
+        );
+      }
     });
   }
 
@@ -83,7 +93,7 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  // 📱 Responsive font/icon scaling
+  // 📱 Responsive font/icon scaling (Your function is good!)
   double responsiveSize(BuildContext context, double baseSize) {
     double screenWidth = MediaQuery.of(context).size.width;
     if (screenWidth < 360) return baseSize * 0.8;
@@ -112,8 +122,8 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       centerTitle: true,
-      flexibleSpace: AnimatedContainer(
-        duration: const Duration(seconds: 2),
+      // 💡 Simplified: Removed AnimatedContainer as no animation was triggered
+      flexibleSpace: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.purple, Colors.teal, Colors.green],
@@ -130,16 +140,42 @@ class _HomePageState extends State<HomePage> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const UserAccountsDrawerHeader(
-            decoration: BoxDecoration(
+          // 💡 Replaced UserAccountsDrawerHeader with a more flexible DrawerHeader
+          DrawerHeader(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Colors.blueAccent, Colors.greenAccent],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
-            accountName: Text("Head Office"),
-            accountEmail: Text("sadiar.rahman970@gmail.com"),
-            currentAccountPicture: CircleAvatar(
-              backgroundImage: AssetImage('asset/images/avatar.jpg'),
+            padding: EdgeInsets.all(responsiveSize(context, 16)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const CircleAvatar(
+                  backgroundImage: AssetImage('asset/images/avatar.jpg'),
+                  radius: 30,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Head Office",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: responsiveSize(context, 16),
+                    shadows: const [Shadow(blurRadius: 2, color: Colors.black26)],
+                  ),
+                ),
+                Text(
+                  "sadiar.rahman970@gmail.com",
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: responsiveSize(context, 12),
+                  ),
+                ),
+              ],
             ),
           ),
           _drawerItem(context, Icons.person, 'Profile', '/profile'),
@@ -153,13 +189,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  final List<Color> _cardColors = [
-    Colors.orangeAccent.shade100,
-    Colors.blueAccent.shade100,
-    Colors.greenAccent.shade100,
-    Colors.purpleAccent.shade100,
-  ];
 
   ListTile _drawerItem(BuildContext context, IconData icon, String title, String route) {
     return ListTile(
@@ -177,13 +206,33 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildSmartBody(BuildContext context) {
     return Container(
-      color: Colors.green.withValues(alpha: 0.05),
+      // 💡 Cleaner background color
+      color: Colors.grey.shade50,
       child: ListView(
-        padding: EdgeInsets.all(responsiveSize(context, 16)),
+        // Removed global padding, applying to children instead
         children: [
-          _buildSmartCarousel(context),
-          SizedBox(height: responsiveSize(context, 20)),
-          _buildSmartGrid(context),
+          Padding(
+            padding: EdgeInsets.only(top: responsiveSize(context, 16)),
+            child: _buildSmartCarousel(context),
+          ),
+          SizedBox(height: responsiveSize(context, 24)),
+          // 💡 Added a section title for better visual hierarchy
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: responsiveSize(context, 16)),
+            child: Text(
+              "Our Services",
+              style: TextStyle(
+                fontSize: responsiveSize(context, 20),
+                fontWeight: FontWeight.bold,
+                color: Colors.teal.shade800,
+              ),
+            ),
+          ),
+          SizedBox(height: responsiveSize(context, 12)),
+          Padding(
+            padding: EdgeInsets.all(responsiveSize(context, 16)),
+            child: _buildSmartGrid(context),
+          ),
         ],
       ),
     );
@@ -192,48 +241,69 @@ class _HomePageState extends State<HomePage> {
   Widget _buildSmartCarousel(BuildContext context) {
     return Column(
       children: [
-        SizedBox(
-          height: responsiveSize(context, 180),
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: _images.length,
-            onPageChanged: (i) => setState(() => _carouselIndex = i),
-            itemBuilder: (context, index) => AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
-              margin: const EdgeInsets.symmetric(horizontal: 5),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                image: DecorationImage(
-                  image: NetworkImage(_images[index]),
-                  fit: BoxFit.cover,
-                ),
+        // 💡 Added a Container with shadow to "lift" the carousel
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.3),
+                blurRadius: 10,
+                spreadRadius: 2,
+                offset: const Offset(0, 5),
               ),
-              child: Container(
-                alignment: Alignment.bottomCenter,
-                padding: EdgeInsets.all(responsiveSize(context, 12)),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  gradient: LinearGradient(
-                    colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
+            ],
+          ),
+          child: SizedBox(
+            height: responsiveSize(context, 180),
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: _images.length,
+              onPageChanged: (i) => setState(() => _carouselIndex = i),
+              itemBuilder: (context, index) {
+                // 💡 Simplified AnimatedContainer to Container
+                return Container(
+                  // Added margin to space out "peek" cards
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    image: DecorationImage(
+                      image: NetworkImage(_images[index]),
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ),
-                child: Text(
-                  _texts[index],
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: responsiveSize(context, 14),
-                    fontStyle: FontStyle.italic,
-                    fontWeight: FontWeight.bold,
+                  child: Container(
+                    alignment: Alignment.bottomCenter,
+                    padding: EdgeInsets.all(responsiveSize(context, 12)),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      // 💡 Darker gradient with stops for better readability
+                      gradient: LinearGradient(
+                        colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        stops: const [0.0, 0.6],
+                      ),
+                    ),
+                    child: Text(
+                      _texts[index],
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: responsiveSize(context, 14),
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.bold,
+                        // 💡 Added text shadow for clarity
+                        shadows: const [Shadow(blurRadius: 2, color: Colors.black54)],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+                );
+              },
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12), // Increased space for dots
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(_images.length, (i) {
@@ -243,7 +313,7 @@ class _HomePageState extends State<HomePage> {
               width: _carouselIndex == i ? 16 : 8,
               height: 8,
               decoration: BoxDecoration(
-                color: _carouselIndex == i ? Colors.teal : Colors.grey,
+                color: _carouselIndex == i ? Colors.teal : Colors.grey.shade400,
                 borderRadius: BorderRadius.circular(10),
               ),
             );
@@ -270,17 +340,19 @@ class _HomePageState extends State<HomePage> {
           onEnter: (_) => setState(() => _hoverIndex = index),
           onExit: (_) => setState(() => _hoverIndex = -1),
           child: AnimatedScale(
-            scale: _hoverIndex == index ? 1.1 : 1.0,
+            scale: _hoverIndex == index ? 1.05 : 1.0, // Slightly reduced scale for subtlety
             duration: const Duration(milliseconds: 200),
             child: Card(
               color: _cardColors[index % _cardColors.length],
               elevation: _hoverIndex == index ? 8 : 2,
-              shadowColor: Colors.tealAccent,
+              shadowColor: Colors.tealAccent.withOpacity(0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
               child: InkWell(
                 borderRadius: BorderRadius.circular(15),
+                // 💡 Added custom splash color
+                splashColor: Colors.teal.withOpacity(0.2),
                 onTap: () {
                   if (index < _routes.length) {
                     Navigator.pushNamed(context, _routes[index]);
@@ -301,6 +373,7 @@ class _HomePageState extends State<HomePage> {
                         style: TextStyle(
                           fontSize: responsiveSize(context, 12),
                           fontWeight: FontWeight.bold,
+                          color: Colors.black87, // Slightly softer than pure black
                         ),
                       ),
                     ],
@@ -326,14 +399,17 @@ class _HomePageState extends State<HomePage> {
       onTap: (index) {
         setState(() => _selectedBottomIndex = index);
         if (index == 0) {
+          // Ensure HeadOffice() is imported
           Navigator.push(context, MaterialPageRoute(builder: (_) => const HeadOffice()));
         }
+        // Add navigation for other items if needed
       },
       selectedItemColor: Colors.teal,
       unselectedItemColor: Colors.grey,
       selectedFontSize: responsiveSize(context, 12),
       unselectedFontSize: responsiveSize(context, 11),
       iconSize: responsiveSize(context, 22),
+      type: BottomNavigationBarType.fixed, // Good practice for consistency
       items: items
           .map(
             (e) => BottomNavigationBarItem(

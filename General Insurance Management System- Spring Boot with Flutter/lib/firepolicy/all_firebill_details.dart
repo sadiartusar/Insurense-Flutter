@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/model/firebill_model.dart';
-
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -11,9 +10,16 @@ class AllFireBillDetails extends StatelessWidget {
 
   const AllFireBillDetails({super.key, required this.bill});
 
-  static const double _fontSize = 14;
+  // 💡 রেসপন্সিভ সাইজিং এর জন্য হেল্পার ফাংশন
+  // এটি স্ক্রিনের প্রস্থের উপর ভিত্তি করে একটি সাইজ রিটার্ন করে
+  double _rSize(BuildContext context, double baseSize) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    // 400px কে বেসলাইন ধরে স্কেল করা হয়েছে এবং 0.8x থেকে 1.3x এর মধ্যে সীমাবদ্ধ রাখা হয়েছে
+    double scale = (screenWidth / 400).clamp(0.8, 1.3);
+    return baseSize * scale;
+  }
 
-  // Function to create PDF with table format
+  // Function to create PDF with table format (Unchanged)
   Future<pw.Document> _generatePdf(BuildContext context) async {
     final pdf = pw.Document();
 
@@ -43,13 +49,14 @@ class AllFireBillDetails extends StatelessWidget {
     return pdf;
   }
 
-  // Helper methods for building PDF sections
+  // Helper methods for building PDF sections (Unchanged)
   pw.Widget _buildHeader() {
     return pw.Center(
       child: pw.Column(
         children: [
           pw.Text("Islami Insurance Company Bangladesh Ltd",
-              style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+              style:
+              pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
           pw.Text("DR Tower (14th floor), 65/2/2, Purana Paltan, Dhaka-1000."),
           pw.Text("Tel: 02478853405, Mob: 01763001787"),
           pw.Text("Fax: +88 02 55112742"),
@@ -60,8 +67,6 @@ class AllFireBillDetails extends StatelessWidget {
     );
   }
 
-
-
   pw.Widget _buildFireBillInfo() {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.center,
@@ -70,7 +75,12 @@ class AllFireBillDetails extends StatelessWidget {
         pw.SizedBox(height: 10),
         pw.Table.fromTextArray(
           data: [
-            ['Fire Bill No', '${bill.firePolicy.id ?? "N/A"}', 'Issue Date', '${formatDate(bill.firePolicy.date)}'],
+            [
+              'Fire Bill No',
+              '${bill.firePolicy.id ?? "N/A"}',
+              'Issue Date',
+              '${formatDate(bill.firePolicy.date)}'
+            ],
           ],
         ),
       ],
@@ -137,11 +147,36 @@ class AllFireBillDetails extends StatelessWidget {
         pw.Table.fromTextArray(
           headers: ['Description', 'Rate', 'BDT', 'Amount'],
           data: [
-            ['Fire Rate', '${bill.fire ?? 0}% on ${bill.firePolicy.sumInsured ?? "N/A"}', 'TK', '${getTotalFire().toStringAsFixed(2)}'],
-            ['Rsd Rate', '${bill.rsd ?? 0}% on ${bill.firePolicy.sumInsured ?? "N/A"}', 'TK', '${getTotalRsd().toStringAsFixed(2)}'],
-            ['Net Premium (Fire + RSD)', '', 'TK', '${getTotalPremium().toStringAsFixed(2)}'],
-            ['Tax on Net Premium', '${bill.tax ?? 0}% on ${getTotalPremium().toStringAsFixed(2)}', 'TK', '${getTotalTax().toStringAsFixed(2)}'],
-            ['Gross Premium with Tax', '', 'TK', '${getTotalPremiumWithTax().toStringAsFixed(2)}'],
+            [
+              'Fire Rate',
+              '${bill.fire ?? 0}% on ${bill.firePolicy.sumInsured ?? "N/A"}',
+              'TK',
+              '${getTotalFire().toStringAsFixed(2)}'
+            ],
+            [
+              'Rsd Rate',
+              '${bill.rsd ?? 0}% on ${bill.firePolicy.sumInsured ?? "N/A"}',
+              'TK',
+              '${getTotalRsd().toStringAsFixed(2)}'
+            ],
+            [
+              'Net Premium (Fire + RSD)',
+              '',
+              'TK',
+              '${getTotalPremium().toStringAsFixed(2)}'
+            ],
+            [
+              'Tax on Net Premium',
+              '${bill.tax ?? 0}% on ${getTotalPremium().toStringAsFixed(2)}',
+              'TK',
+              '${getTotalTax().toStringAsFixed(2)}'
+            ],
+            [
+              'Gross Premium with Tax',
+              '',
+              'TK',
+              '${getTotalPremiumWithTax().toStringAsFixed(2)}'
+            ],
           ],
         ),
       ],
@@ -156,7 +191,12 @@ class AllFireBillDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(child: Text('Fire Bill Details')),
+        title: Center(
+            child: Text(
+              'Fire Bill Details',
+              // 💡 রেসপন্সিভ ফন্ট সাইজ
+              style: TextStyle(fontSize: _rSize(context, 18)),
+            )),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -168,47 +208,73 @@ class AllFireBillDetails extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        // 💡 রেসপন্সিভ প্যাডিং
+        padding: EdgeInsets.all(_rSize(context, 16)),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          // 💡 বাটনগুলোকে পুরো প্রস্থ দেওয়ার জন্য
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildRow('Fire Bill No:', '${bill.firePolicy.id ?? "N/A"}'),
-            _buildRow('Issue Date:', '${formatDate(bill.firePolicy.date)}'),
-            _buildRow('Bank Name:', '${bill.firePolicy.bankName ?? "N/A"}'),
-            _buildRow('Policyholder:', '${bill.firePolicy.policyholder ?? "N/A"}'),
-            _buildRow('Address:', '${bill.firePolicy.address ?? "N/A"}'),
-            _buildRow('Stock Insured:', '${bill.firePolicy.stockInsured ?? "N/A"}'),
-            _buildRow('Sum Insured:', '${bill.firePolicy.sumInsured ?? "N/A"} TK'),
-            _buildRow('Interest Insured:', '${bill.firePolicy.interestInsured ?? "N/A"}'),
-            _buildRow('Coverage:', '${bill.firePolicy.coverage ?? "N/A"}'),
-            _buildRow('Location:', '${bill.firePolicy.location ?? "N/A"}'),
-            _buildRow('Construction:', '${bill.firePolicy.construction ?? "N/A"}'),
-            _buildRow('Owner:', '${bill.firePolicy.owner ?? "N/A"}'),
-            _buildRow('Used As:', '${bill.firePolicy.usedAs ?? "N/A"}'),
-            _buildRow('Period From:', '${formatDate(bill.firePolicy.periodFrom)}'),
-            _buildRow('Period To:', '${formatDate(bill.firePolicy.periodTo)}'),
-            const SizedBox(height: 20),
+            // 💡 _buildRow এখন context নেয়
+            _buildRow(context, 'Fire Bill No:', '${bill.firePolicy.id ?? "N/A"}'),
+            _buildRow(context, 'Issue Date:', '${formatDate(bill.firePolicy.date)}'),
+            _buildRow(context, 'Bank Name:', '${bill.firePolicy.bankName ?? "N/A"}'),
+            _buildRow(
+                context, 'Policyholder:', '${bill.firePolicy.policyholder ?? "N/A"}'),
+            _buildRow(context, 'Address:', '${bill.firePolicy.address ?? "N/A"}'),
+            _buildRow(context, 'Stock Insured:',
+                '${bill.firePolicy.stockInsured ?? "N/A"}'),
+            _buildRow(context, 'Sum Insured:',
+                '${bill.firePolicy.sumInsured ?? "N/A"} TK'),
+            _buildRow(context, 'Interest Insured:',
+                '${bill.firePolicy.interestInsured ?? "N/A"}'),
+            _buildRow(
+                context, 'Coverage:', '${bill.firePolicy.coverage ?? "N/A"}'),
+            _buildRow(
+                context, 'Location:', '${bill.firePolicy.location ?? "N/A"}'),
+            _buildRow(context, 'Construction:',
+                '${bill.firePolicy.construction ?? "N/A"}'),
+            _buildRow(context, 'Owner:', '${bill.firePolicy.owner ?? "N/A"}'),
+            _buildRow(context, 'Used As:', '${bill.firePolicy.usedAs ?? "N/A"}'),
+            _buildRow(context, 'Period From:',
+                '${formatDate(bill.firePolicy.periodFrom)}'),
+            _buildRow(
+                context, 'Period To:', '${formatDate(bill.firePolicy.periodTo)}'),
+            SizedBox(height: _rSize(context, 20)),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: _rSize(context, 12)),
+              ),
               onPressed: () async {
-                final pdf = await _generatePdf(context);  // Generate PDF
-                final pdfBytes = await pdf.save(); // Get the bytes of the generated PDF
+                final pdf = await _generatePdf(context); // Generate PDF
+                final pdfBytes =
+                await pdf.save(); // Get the bytes of the generated PDF
 
                 await Printing.sharePdf(
                   bytes: pdfBytes,
                   filename: 'fire_bill_information.pdf',
                 );
               },
-              child: const Text('Download PDF'),
+              child: Text(
+                'Download PDF',
+                style: TextStyle(fontSize: _rSize(context, 15)),
+              ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: _rSize(context, 10)),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: _rSize(context, 12)),
+              ),
               onPressed: () async {
-                await Printing.layoutPdf(onLayout: (PdfPageFormat format) async {
-                  final pdf = await _generatePdf(context);  // Generate PDF
-                  return pdf.save();  // Return the saved bytes for printing
-                });
+                await Printing.layoutPdf(
+                    onLayout: (PdfPageFormat format) async {
+                      final pdf = await _generatePdf(context); // Generate PDF
+                      return pdf.save(); // Return the saved bytes for printing
+                    });
               },
-              child: const Text('Print View'),
+              child: Text(
+                'Print View',
+                style: TextStyle(fontSize: _rSize(context, 15)),
+              ),
             ),
           ],
         ),
@@ -216,16 +282,45 @@ class AllFireBillDetails extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(String title, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title, style: const TextStyle(fontSize: _fontSize)),
-        Text(value, style: const TextStyle(fontSize: _fontSize)),
-      ],
+  // 💡 সম্পূর্ণ নতুন _buildRow ফাংশন, যা রেসপন্সিভ
+  Widget _buildRow(BuildContext context, String title, String value) {
+    final double fontSize = _rSize(context, 15);
+
+    return Padding(
+      // প্রতিটা সারির মধ্যে রেসপন্সিভ প্যাডিং
+      padding: EdgeInsets.symmetric(vertical: _rSize(context, 6)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start, // লেখা উপরে অ্যালাইন রাখার জন্য
+        children: [
+          // শিরোনাম (Title)
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold, // শিরোনামকে বোল্ড করা হয়েছে
+              color: Colors.black87,
+            ),
+          ),
+          SizedBox(width: _rSize(context, 10)), // দুটির মধ্যে ফাঁকা জায়গা
+
+          // তথ্য (Value)
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right, // ডানদিকে অ্যালাইন করা
+              style: TextStyle(
+                fontSize: fontSize,
+                color: Colors.black54, // তথ্যের রঙ কিছুটা হালকা করা হয়েছে
+              ),
+              softWrap: true, // লেখা বড় হলে নতুন লাইনে যাবে
+            ),
+          ),
+        ],
+      ),
     );
   }
 
+  // Helper functions (Unchanged)
   String formatDate(DateTime? date) {
     return date != null ? DateFormat('dd-MM-yyyy').format(date) : "N/A";
   }
