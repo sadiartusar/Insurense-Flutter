@@ -167,7 +167,7 @@ class _AllFirePolicyViewState extends State<AllFirePolicyView>
         child: Column(
           children: [
             _buildSearchBar(),
-            _buildDateFilterRow(),
+            // _buildDateFilterRow(),
             Expanded(
               child: FutureBuilder<List<PolicyModel>>(
                 future: futurePolicies,
@@ -235,27 +235,27 @@ class _AllFirePolicyViewState extends State<AllFirePolicyView>
     );
   }
 
-  Widget _buildDateFilterRow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Wrap(
-        spacing: 10,
-        alignment: WrapAlignment.center,
-        children: [
-          _animatedFilterButton(
-              label: startDate == null
-                  ? 'Select Start Date'
-                  : 'Start: ${startDate!.toLocal().toString().split(' ')[0]}',
-              onTap: () => _selectStartDate(context)),
-          _animatedFilterButton(
-              label: endDate == null
-                  ? 'Select End Date'
-                  : 'End: ${endDate!.toLocal().toString().split(' ')[0]}',
-              onTap: () => _selectEndDate(context)),
-        ],
-      ),
-    );
-  }
+  // Widget _buildDateFilterRow() {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(vertical: 6.0),
+  //     child: Wrap(
+  //       spacing: 10,
+  //       alignment: WrapAlignment.center,
+  //       children: [
+  //         _animatedFilterButton(
+  //             label: startDate == null
+  //                 ? 'Select Start Date'
+  //                 : 'Start: ${startDate!.toLocal().toString().split(' ')[0]}',
+  //             onTap: () => _selectStartDate(context)),
+  //         _animatedFilterButton(
+  //             label: endDate == null
+  //                 ? 'Select End Date'
+  //                 : 'End: ${endDate!.toLocal().toString().split(' ')[0]}',
+  //             onTap: () => _selectEndDate(context)),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _animatedFilterButton({required String label, required VoidCallback onTap}) {
     return AnimatedContainer(
