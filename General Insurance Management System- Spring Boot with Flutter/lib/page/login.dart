@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:general_insurance_management_system/page/home.dart';
 import 'package:general_insurance_management_system/page/registration.dart';
+import 'package:general_insurance_management_system/page/user_profile.dart';
 import 'package:general_insurance_management_system/service/auth_service.dart';
 import 'dart:ui'; // Necesario para ImageFilter.blur
 
@@ -268,31 +269,49 @@ class _LoginPageState extends State<LoginPage> {
   }
 
 
-  // --- LÓGICA DE LOGIN (Sin cambios) ---
+  // --- LÓGICA DE LOGIN (Fixed & Improved) ---
   Future<void> loginUser(BuildContext context) async {
     try {
-      final response = await authService.login(email.text, password.text);
+      final success = await authService.login(email.text, password.text);
 
-      // Successful login, role-based navigation
-      final role = await authService.getUserRole(); // Get role from AuthService
+      if (!success) {
+        _showErrorDialog('Login Failed', 'Invalid email or password.');
+        return;
+      }
+
+      final role = await authService.getUserRole();
 
       if (role == 'ADMIN') {
-        // Usamos pushReplacement para que el usuario no pueda "volver" a la pantalla de login
+        // Admin route
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomePage()),
         );
-      } else {
-        print('Unknown role: $role');
-        // Opcional: Mostrar un error al usuario si el rol no es 'ADMIN'
-        _showErrorDialog('Login Error', 'Access denied. User role is not ADMIN.');
+      }
+      else if (role == 'USER') {
+        // ✅ Fetch user profile before navigating
+        final profile = await authService.getUserProfile();
+
+        if (profile != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UserPage(profile: profile),
+            ),
+          );
+        } else {
+          _showErrorDialog('Error', 'Failed to load user profile.');
+        }
+      }
+      else {
+        _showErrorDialog('Access Denied', 'Unknown user role.');
       }
     } catch (error) {
       print('Login failed: $error');
-      // Mostrar un diálogo de error al usuario
-      _showErrorDialog('Login Failed', 'Invalid email or password. Please try again.');
+      _showErrorDialog('Login Error', 'Something went wrong. Try again later.');
     }
   }
+
 
   // Función de ayuda para mostrar errores al usuario
   Future<void> _showErrorDialog(String title, String content) async {

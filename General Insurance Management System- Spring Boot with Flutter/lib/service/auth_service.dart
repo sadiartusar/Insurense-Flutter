@@ -6,30 +6,36 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthService {
   final String baseUrl = 'http://localhost:8085'; // Your backend API base URL
 
+  /// ✅ Login method
+  /// Sends credentials, gets a JWT, decodes it, and stores token + role.
   Future<bool> login(String email, String password) async {
     final url = Uri.parse('$baseUrl/api/user/login');
     final headers = {'Content-Type': 'application/json'};
-
     final body = jsonEncode({'email': email, 'password': password});
 
     final response = await http.post(url, headers: headers, body: body);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      String token = data['token'];
+      final String token = data['token'];
 
-      // Decode token to get role
-      Map<String, dynamic> payload = Jwt.parseJwt(token);
-      String role = payload['role'];
+      // Decode token to extract role
+      final Map<String, dynamic> payload = Jwt.parseJwt(token);
+      final String role = payload['role'];
 
-      // Store token and role
-      SharedPreferences prefs = await SharedPreferences.getInstance();
+      // Save token, role, and optionally user info
+      final prefs = await SharedPreferences.getInstance();
       await prefs.setString('authToken', token);
       await prefs.setString('userRole', role);
 
+      // ✅ If backend returns user info in login response, save it
+      if (data.containsKey('user')) {
+        await prefs.setString('user', jsonEncode(data['user']));
+      }
+
       return true;
     } else {
-      print('Failed to log in: ${response.body}');
+      print('❌ Failed to log in: ${response.body}');
       return false;
     }
   }
@@ -131,6 +137,32 @@ class AuthService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> getUserProfile() async {
+    String? token = await getToken();
+
+    if (token == null) {
+      print("Please login first");
+      return null;
+    }
+
+    final url = Uri.parse('$baseUrl/api/user/profile');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print('Failed to load Profile: ${response.statusCode} - ${response.body}');
+      return null;
+    }
+  }
+
 
 
 }
