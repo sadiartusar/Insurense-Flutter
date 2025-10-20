@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:general_insurance_management_system/firepolicy/all_firebill_details.dart';
-import 'package:general_insurance_management_system/firepolicy/create_fire_bill.dart';
-import 'package:general_insurance_management_system/firepolicy/update_fire_bill.dart';
-import 'package:general_insurance_management_system/model/firebill_model.dart';
-import 'package:general_insurance_management_system/service/firebill_service.dart';
+import 'package:general_insurance_management_system/carpolicy/all_car_bill_details.dart';
+import 'package:general_insurance_management_system/carpolicy/create_car_bill.dart';
+import 'package:general_insurance_management_system/carpolicy/update_car_bill.dart';
+import 'package:general_insurance_management_system/model/carbill_model.dart';
+import 'package:general_insurance_management_system/service/carbill_service.dart';
+
 
 class AllCarBillView extends StatefulWidget {
   const AllCarBillView({Key? key}) : super(key: key);
 
   @override
-  State<AllCarBillView> createState() => _AllCareBillViewState();
+  State<AllCarBillView> createState() => _AllCarBillViewState();
 }
 
-class _AllCareBillViewState extends State<AllCarBillView> {
-  late Future<List<FirebillModel>> futureBills;
-  List<FirebillModel> allBills = [];
-  List<FirebillModel> filteredBills = [];
+class _AllCarBillViewState extends State<AllCarBillView> {
+  late Future<List<CarBillModel>> futureBills;
+  List<CarBillModel> allBills = [];
+  List<CarBillModel> filteredBills = [];
   String searchQuery = '';
   DateTime? startDate;
   DateTime? endDate;
@@ -26,8 +27,8 @@ class _AllCareBillViewState extends State<AllCarBillView> {
   @override
   void initState() {
     super.initState();
-    final service = BillService();
-    futureBills = service.fetchAllFireBills().then((bills) {
+    final service = CarBillService();
+    futureBills = service.fetchAllCarBills().then((bills) {
       allBills = bills;
       filteredBills = allBills;
       return bills;
@@ -48,8 +49,8 @@ class _AllCareBillViewState extends State<AllCarBillView> {
     setState(() {
       searchQuery = query.toLowerCase();
       filteredBills = allBills.where((bill) {
-        final policyholder = bill.firePolicy.policyholder?.toLowerCase() ?? '';
-        final bankName = bill.firePolicy.bankName?.toLowerCase() ?? '';
+        final policyholder = bill.carPolicy.policyholder?.toLowerCase() ?? '';
+        final bankName = bill.carPolicy.bankName?.toLowerCase() ?? '';
         final id = bill.id.toString();
 
         bool matchesSearch = policyholder.contains(searchQuery) ||
@@ -59,9 +60,9 @@ class _AllCareBillViewState extends State<AllCarBillView> {
         bool matchesDateRange = true;
 
         if (startDate != null && endDate != null) {
-          DateTime policyDate = bill.firePolicy.date is DateTime
-              ? normalizeDate(bill.firePolicy.date as DateTime)
-              : normalizeDate(DateTime.parse(bill.firePolicy.date as String));
+          DateTime policyDate = bill.carPolicy.date is DateTime
+              ? normalizeDate(bill.carPolicy.date as DateTime)
+              : normalizeDate(DateTime.parse(bill.carPolicy.date as String));
 
           DateTime start = normalizeDate(startDate!);
           DateTime end = normalizeDate(endDate!);
@@ -181,7 +182,7 @@ class _AllCareBillViewState extends State<AllCarBillView> {
 
             // 📋 Bill List
             Expanded(
-              child: FutureBuilder<List<FirebillModel>>(
+              child: FutureBuilder<List<CarBillModel>>(
                 future: futureBills,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -215,7 +216,7 @@ class _AllCareBillViewState extends State<AllCarBillView> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Bill No: ${bill.firePolicy.id ?? 'N/A'}',
+                                    'Bill No: ${bill.carPolicy.id ?? 'N/A'}',
                                     style: TextStyle(
                                       fontSize: isSmall ? 14 : 16,
                                       fontWeight: FontWeight.bold,
@@ -224,13 +225,13 @@ class _AllCareBillViewState extends State<AllCarBillView> {
                                   ),
                                   SizedBox(height: height * 0.005),
                                   Text(
-                                    bill.firePolicy.bankName ?? 'Unnamed Policy',
+                                    bill.carPolicy.bankName ?? 'Unnamed Policy',
                                     style: TextStyle(
                                         fontSize: isSmall ? 14 : 16,
                                         fontWeight: FontWeight.bold),
                                   ),
                                   SizedBox(height: height * 0.005),
-                                  Text(bill.firePolicy.policyholder ?? 'No policyholder',
+                                  Text(bill.carPolicy.policyholder ?? 'No policyholder',
                                       style: commonStyle),
                                   SizedBox(height: height * 0.005),
 
@@ -240,14 +241,14 @@ class _AllCareBillViewState extends State<AllCarBillView> {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          bill.firePolicy.address ?? 'No address',
+                                          bill.carPolicy.address ?? 'No address',
                                           style: commonStyle,
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                       const SizedBox(width: 10),
                                       Text(
-                                        'Tk ${bill.firePolicy.sumInsured?.toString() ?? 'N/A'}',
+                                        'Tk ${bill.carPolicy.sumInsured?.toString() ?? 'N/A'}',
                                         style: const TextStyle(
                                             fontWeight: FontWeight.bold, color: Colors.green),
                                       ),
@@ -259,7 +260,7 @@ class _AllCareBillViewState extends State<AllCarBillView> {
                                     spacing: 8,
                                     runSpacing: 4,
                                     children: [
-                                      Text('Fire: ${bill.fire ?? 0}%', style: commonStyle),
+                                      Text('Fire: ${bill.carRate ?? 0}%', style: commonStyle),
                                       Text('RSD: ${bill.rsd ?? 0}%', style: commonStyle),
                                       Text('Net: ${bill.netPremium ?? 0}', style: commonStyle),
                                       Text('Tax: ${bill.tax ?? 0}%', style: commonStyle),
@@ -287,7 +288,7 @@ class _AllCareBillViewState extends State<AllCarBillView> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => const CreateFireBill()));
+              context, MaterialPageRoute(builder: (context) => const CreateCarBill()));
         },
         backgroundColor: Colors.blue,
         child: const Icon(Icons.add),
@@ -295,7 +296,7 @@ class _AllCareBillViewState extends State<AllCarBillView> {
     );
   }
 
-  Widget _buildActionButtons(FirebillModel bill, bool isSmall) {
+  Widget _buildActionButtons(CarBillModel bill, bool isSmall) {
     return Row(
       children: [
         IconButton(
@@ -303,7 +304,7 @@ class _AllCareBillViewState extends State<AllCarBillView> {
           onPressed: () async {
             await Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => AllFireBillDetails(bill: bill)),
+              MaterialPageRoute(builder: (context) => AllCarBillDetails(bill: bill)),
             );
           },
           tooltip: 'View Details',
@@ -318,7 +319,7 @@ class _AllCareBillViewState extends State<AllCarBillView> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => UpdateFireBill(bill: bill)),
+              MaterialPageRoute(builder: (context) => UpdateCarBill(bill: bill)),
             );
           },
           tooltip: 'Edit Bill',
@@ -351,11 +352,11 @@ class _AllCareBillViewState extends State<AllCarBillView> {
   }
 
   void _deleteBill(int billId) async {
-    final service = BillService();
+    final service = CarBillService();
     try {
       await service.deleteBill(billId);
       setState(() {
-        futureBills = service.fetchAllFireBills();
+        futureBills = service.fetchAllCarBills();
       });
     } catch (e) {
       print('Error deleting bill: $e');

@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:general_insurance_management_system/firepolicy/view_fire_money_receipt.dart';
-import 'package:general_insurance_management_system/model/firebill_model.dart';
-import 'package:general_insurance_management_system/model/firemoneyreceipt_model.dart';
-import 'package:general_insurance_management_system/model/firepolicy_model.dart';
-import 'package:general_insurance_management_system/service/fire_money_receipt_service.dart';
-import 'package:general_insurance_management_system/service/firebill_service.dart';
+import 'package:general_insurance_management_system/carpolicy/view_car_money_receipt.dart';
+import 'package:general_insurance_management_system/model/carbill_model.dart';
+import 'package:general_insurance_management_system/model/carmoneyreceipt_model.dart';
+import 'package:general_insurance_management_system/model/carpolicy_model.dart';
+import 'package:general_insurance_management_system/service/carbill_service.dart';
+import 'package:general_insurance_management_system/service/carmoneyreceipt_service.dart';
 
 import 'package:intl/intl.dart';
 
 
-class CreateFireMoneyReceipt extends StatefulWidget {
-  const CreateFireMoneyReceipt({Key? key}) : super(key: key);
+class UpdateCarMoneyReceipt extends StatefulWidget {
+  const UpdateCarMoneyReceipt({Key? key,required this.moneyreceipt}) : super(key: key);
+
+  final CarMoneyReceiptModel moneyreceipt ;
 
   @override
-  State<CreateFireMoneyReceipt> createState() => _CreateFireMoneyReceiptState();
+  State<UpdateCarMoneyReceipt> createState() => _UpdateCarMoneyReceiptState();
 }
 
-class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
+class _UpdateCarMoneyReceiptState extends State<UpdateCarMoneyReceipt> {
   final TextEditingController issuingOfficeController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
-  final TextEditingController modeOfPaymentController = TextEditingController();
   final TextEditingController issuedAgainstController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
-  final MoneyReceiptService moneyReceiptService = MoneyReceiptService();
+  final CarMoneyReceiptService moneyReceiptService = CarMoneyReceiptService();
 
-  List<FirebillModel> filteredBills = [];
-  List<FirebillModel> bills = [];
+  List<CarBillModel> bills = [];
   List<String> uniqueBankNames = [];
   List<double> uniqueSumInsured = [];
   String? selectedPolicyholder;
@@ -35,13 +35,13 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
   String? selectedClassOfInsurance;
   String? selectedModeOfPayment;
   bool isLoading = false;
-  TextEditingController searchController = TextEditingController();
+
 
 
   final List<String> classOfInsuranceOptions = [
     'Fire Insurance',
-    'Marine Insurance',
-    'Motor Insurance'
+    'Car Insurance',
+
   ];
 
   final List<String> modeOfPaymentOptions = [
@@ -51,30 +51,44 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
     'Cheque'
   ];
 
+
+
   @override
   void initState() {
     super.initState();
     _fetchData();
-    searchController.addListener(_filterPolicyholders);
-
-
-    // Set the current date to the dateController
-    dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    _populateInitialData();
   }
+
+  void _populateInitialData() {
+    selectedClassOfInsurance = widget.moneyreceipt.classOfInsurance ?? '';
+    selectedModeOfPayment = widget.moneyreceipt.modeOfPayment ?? '';
+    issuingOfficeController.text = widget.moneyreceipt.issuingOffice ?? '';
+    dateController.text = widget.moneyreceipt.date != null
+        ? DateFormat('yyyy-MM-dd').format(widget.moneyreceipt.date!)
+        : '';
+    issuedAgainstController.text = widget.moneyreceipt.issuedAgainst ?? '';
+
+    // Check if bill and policy are not null before accessing their fields
+    selectedPolicyholder = widget.moneyreceipt.carBill?.carPolicy.policyholder ?? '';
+    selectedBankName = widget.moneyreceipt.carBill?.carPolicy.bankName ?? '';
+    selectedSumInsured = widget.moneyreceipt.carBill?.carPolicy.sumInsured ?? 0.0;
+  }
+
+
 
   Future<void> _fetchData() async {
     setState(() => isLoading = true);
     try {
-      bills = await BillService().fetchAllFireBills();
-      uniqueBankNames = bills.map((fireBill) => fireBill.firePolicy.bankName).whereType<String>().toSet().toList();
-      uniqueSumInsured = bills.map((fireBill) => fireBill.firePolicy.sumInsured).whereType<double>().toSet().toList();
+      bills = await CarBillService().fetchAllCarBills();
+      uniqueBankNames = bills.map((carBill) => carBill.carPolicy.bankName).whereType<String>().toSet().toList();
+      uniqueSumInsured = bills.map((carBill) => carBill.carPolicy.sumInsured).whereType<double>().toSet().toList();
 
       if (bills.isNotEmpty) {
         setState(() {
-          filteredBills = List.from(bills);
-          selectedPolicyholder = bills.first.firePolicy.policyholder;
-          selectedBankName = bills.first.firePolicy.bankName ?? uniqueBankNames.first;
-          selectedSumInsured = bills.first.firePolicy.sumInsured ?? uniqueSumInsured.first;
+          selectedPolicyholder = bills.first.carPolicy.policyholder;
+          selectedBankName = bills.first.carPolicy.bankName ?? uniqueBankNames.first;
+          selectedSumInsured = bills.first.carPolicy.sumInsured ?? uniqueSumInsured.first;
         });
       }
     } catch (error) {
@@ -86,23 +100,14 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
   }
 
 
-  void _filterPolicyholders() {
-    String query = searchController.text.toLowerCase();
-    setState(() {
-      filteredBills = bills.where((fireBill) {
-        return fireBill.firePolicy.policyholder?.toLowerCase().contains(query) ?? false;
-      }).toList();
-    });
-  }
 
-  void _createMoneyReceipt() async {
+  void _updateMoneyReceipt() async {
     if (_formKey.currentState!.validate()) {
       setState(() => isLoading = true);
 
       try {
         final selectedPolicy = bills.firstWhere(
-              (fireBill) =>
-              fireBill.firePolicy.policyholder == selectedPolicyholder,
+              (carBill) => carBill.carPolicy.policyholder == selectedPolicyholder,
         );
 
         if (selectedPolicy.id == null) {
@@ -110,25 +115,25 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
           return;
         }
 
-        await moneyReceiptService.createMoneyReceipt(
-          FireMoneyReceiptModel(
+        await moneyReceiptService.updateMoneyReceipt( widget.moneyreceipt.id!,
+          CarMoneyReceiptModel(
             issuingOffice: issuingOfficeController.text,
-            classOfInsurance: selectedClassOfInsurance!,
-            modeOfPayment: selectedModeOfPayment!,
+            classOfInsurance: selectedClassOfInsurance?? '',
+            modeOfPayment: selectedModeOfPayment?? '',
             date: DateTime.parse(dateController.text),
             issuedAgainst: issuedAgainstController.text,
-            fireBill: selectedPolicy,
+            carBill: selectedPolicy,
           ),
-          selectedPolicy.id!,
+
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Marine Money Receipt created successfully!')),
+          SnackBar(content: Text('Car Money Receipt Updated successfully!')),
         );
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => AllFireMoneyReceiptView()),
+          MaterialPageRoute(builder: (context) => AllCarMoneyReceiptView()),
         );
       } catch (error) {
         _showErrorSnackBar('Error: $error');
@@ -148,7 +153,7 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Fire Money Receipt Form'),
+        title: const Text('Update Car Money Receipt Form'),
         centerTitle: true,
         flexibleSpace: Container(
           decoration: BoxDecoration(
@@ -175,8 +180,6 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 10),
-              _buildSearchField(),
-              const SizedBox(height: 20),
               _buildDropdownField(),
               SizedBox(height: 20),
               _buildDropdownBankNameField(),
@@ -196,8 +199,7 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
               _buildTextField(issuedAgainstController, 'Issued Against',
                   Icons.receipt),
               SizedBox(height: 20),
-              _buildSubmitButton(),
-              const SizedBox(height: 20),
+              _buildSubmitButton()
             ],
           ),
         ),
@@ -211,7 +213,7 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: ElevatedButton(
-        onPressed: _createMoneyReceipt,
+        onPressed: _updateMoneyReceipt,
         style: ElevatedButton.styleFrom(
           backgroundColor: _isHovered ? Colors.green : Colors.blueAccent,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -222,7 +224,7 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
           elevation: _isHovered ? 12 : 4,  // Higher elevation on hover
         ),
         child: const Text(
-          "Create Money Receipt",
+          "Update ",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -233,37 +235,21 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
     );
   }
 
-  Widget _buildSearchField() {
-    return TextField(
-      controller: searchController,
-      decoration: _inputDecoration('Search Policyholder',Icons.search),
-    );
 
-  }
 
   Widget _buildDropdownField() {
-    // Extract unique policyholders from filteredBills
-    final uniquePolicyholders = {
-      for (var fireBill in filteredBills) fireBill.firePolicy.policyholder
-    }.where((policyholder) => policyholder != null).cast<String>().toList();
-
-    // Set the initial selected value if none has been set
-    if (selectedPolicyholder == null && uniquePolicyholders.isNotEmpty) {
-      selectedPolicyholder = uniquePolicyholders.first;
-    }
-
     return DropdownButtonFormField<String>(
-      value: uniquePolicyholders.contains(selectedPolicyholder) ? selectedPolicyholder : null,
+      value: selectedPolicyholder,
       onChanged: isLoading ? null : (String? newValue) {
         setState(() {
           selectedPolicyholder = newValue;
 
           // Find the first bill with the selected policyholder
           final selectedBill = bills.firstWhere(
-                (fireBill) => fireBill.firePolicy.policyholder == selectedPolicyholder,
-            orElse: () => FirebillModel(
-              firePolicy: PolicyModel(bankName: null, sumInsured: null),
-              fire: 0.0, // Default value
+                (carBill) => carBill.carPolicy.policyholder == selectedPolicyholder,
+            orElse: () => CarBillModel(
+              carPolicy: CarPolicyModel(bankName: null, sumInsured: null),
+              carRate: 0.0, // Default value
               rsd: 0.0, // Default value
               netPremium: 0.0, // Default value
               tax: 0.0, // Default value
@@ -272,15 +258,15 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
           );
 
           // Update bankName and sumInsured based on selected policyholder's policy
-          selectedSumInsured = selectedBill.firePolicy.sumInsured;
-          selectedBankName = selectedBill.firePolicy.bankName;
+          selectedSumInsured = selectedBill.carPolicy.sumInsured;
+          selectedBankName = selectedBill.carPolicy.bankName;
         });
       },
       decoration: _inputDecoration('Policyholder', Icons.person),
-      items: uniquePolicyholders.map<DropdownMenuItem<String>>((String policyholder) {
+      items: bills.map<DropdownMenuItem<String>>((CarBillModel carBill) {
         return DropdownMenuItem<String>(
-          value: policyholder,
-          child: Text(policyholder, style: const TextStyle(fontSize: 14)),
+          value: carBill.carPolicy.policyholder,
+          child: Text(carBill.carPolicy.policyholder?? '', style: const TextStyle(fontSize: 14)),
         );
       }).toList(),
     );
@@ -349,7 +335,7 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
         FocusScope.of(context).requestFocus(FocusNode()); // Unfocus the field
         DateTime? pickedDate = await showDatePicker(
           context: context,
-          initialDate: DateTime.now(),
+          initialDate: widget.moneyreceipt.date ?? DateTime.now(),
           firstDate: DateTime(2000),
           lastDate: DateTime(2101),
         );

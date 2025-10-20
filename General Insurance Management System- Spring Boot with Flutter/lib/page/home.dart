@@ -18,7 +18,7 @@ class _HomePageState extends State<HomePage> {
 
   static const List<String> _images = [
     'https://t3.ftcdn.net/jpg/13/71/18/42/240_F_1371184254_OEF4g1JYdSWwUQqRFxRDVIgFBGXmNcPe.jpg',
-    'https://www.shutterstock.com/image-photo/insurer-protecting-family-house-car-260nw-1295560780.jpg',
+    'https://media.gettyimages.com/id/1341519862/vector/car-insurance-auto-insurance.jpg?s=612x612&w=gi&k=20&c=uWnJORQMRbsWfCqlZsuXb8JXl-uOLpecRsCGP2avEIk=',
     'https://png.pngtree.com/template/20220516/ourmid/pngtree-insurance-policy-banner-template-flat-design-illustration-editable-of-square-background-image_1571396.jpg',
   ];
 
