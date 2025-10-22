@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/page/login.dart';
+import 'package:general_insurance_management_system/page/user_accounts_page.dart';
 import 'package:general_insurance_management_system/service/auth_service.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -90,7 +91,7 @@ class UserPage extends StatelessWidget {
         required String position,
         required String status,
         required Color statusColor,
-        required String employeeId,
+        required String userId,
         required Widget profilePicture}) { // Accepts the animated picture
 
     // Using OpenContainer for a neat reveal of the whole header
@@ -124,7 +125,7 @@ class UserPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Employee ID: $employeeId',
+              'User ID: $userId',
               style: GoogleFonts.roboto(
                 fontSize: 15,
                 color: Colors.grey[600],
@@ -175,7 +176,7 @@ class UserPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Base image URL (change this to your backend image folder)
-    const String baseUrl = "http://localhost:8085/images/user/";
+    const String baseUrl = "http://localhost:8085/images/users/";
     final String photoName = profile['photo'] ?? '';
     final String? photoUrl = (photoName.isNotEmpty) ? "$baseUrl$photoName" : null;
 
@@ -265,7 +266,8 @@ class UserPage extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.payment_outlined),
               title: const Text('Payment'),
-              onTap: () => Navigator.pop(context),
+
+              onTap: () => Navigator.push(context,MaterialPageRoute(builder: (context) => const UserAccountsPage()),),
             ),
             ListTile(
               leading: const Icon(Icons.settings),
@@ -312,7 +314,7 @@ class UserPage extends StatelessWidget {
                 position: role,
                 status: status,
                 statusColor: statusColor,
-                employeeId: id.toString(),
+                userId: id.toString(),
                 profilePicture: profilePictureWidget,
               ),
             ),
