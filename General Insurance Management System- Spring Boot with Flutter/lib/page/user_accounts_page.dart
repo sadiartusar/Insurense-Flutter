@@ -16,7 +16,6 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
   final _senderController = TextEditingController();
   final _receiverController = TextEditingController();
   final _amountController = TextEditingController();
-  final _depositAmountController = TextEditingController();
   final _balanceIdController = TextEditingController();
 
   final PaymentService _service = PaymentService();
@@ -28,6 +27,11 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
   @override
   void initState() {
     super.initState();
+
+  }
+
+  Future<void> _accountDetails() async{
+    setState(() => _loading = true);
 
   }
 
@@ -44,17 +48,7 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
     ));
   }
 
-  Future<void> _deposit() async {
-    setState(() => _loading = true);
-    bool success = await _service.deposit(
-      id: int.parse(_senderController.text),
-      amount: double.parse(_depositAmountController.text),
-    );
-    setState(() => _loading = false);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(success ? '✅ Deposit successful' : '❌ Deposit failed'),
-    ));
-  }
+
 
   Future<void> _getBalance() async {
     setState(() => _loading = true);
@@ -92,11 +86,6 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
 
             const Divider(),
 
-            const Text('🏦 Deposit', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            TextField(controller: _depositAmountController, decoration: const InputDecoration(labelText: 'Deposit Amount')),
-            ElevatedButton(onPressed: _deposit, child: const Text('Deposit')),
-
-            const Divider(),
 
             const Text('📊 Check Balance', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             TextField(controller: _balanceIdController, decoration: const InputDecoration(labelText: 'User ID')),

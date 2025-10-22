@@ -163,6 +163,37 @@ class AuthService {
     }
   }
 
+  Future<String> fetchBalance(int userId) async {
+    // আপনার টোকেন এখানে ইনজেক্ট করতে হবে
+    String? token = "আপনার_সেভ_করা_bearer_token"; // আপনার টোকেন দিন
+
+    if (token == null) {
+      return 'Token Error';
+    }
+
+    final url = Uri.parse('http://localhost:8085/api/payment/balance/$userId');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // API থেকে সরাসরি '5570.0' এর মতো স্ট্রিং আসছে
+        return response.body;
+      } else {
+        // যদি সার্ভার কোনো এরর দেয়
+        return 'Failed to load balance. Status: ${response.statusCode}';
+      }
+    } catch (e) {
+      // নেটওয়ার্ক বা অন্য কোনো এরর
+      return 'Network Error: $e';
+    }
+  }
 
 
 }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:general_insurance_management_system/model/account_model.dart';
 import 'package:general_insurance_management_system/model/payment_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -41,36 +42,30 @@ class PaymentService {
     required int receiverId,
     required double amount,
   }) async {
-    final url = Uri.parse('$baseUrl/pay');
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('authToken');
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('authToken');
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: {
-          'senderId': senderId,
-          'receiverId': receiverId,
-          'amount': amount,
-        },
-      );
+    final url = Uri.parse(
+      'http://localhost:8085/api/payment/pay'
+          '?senderId=$senderId&receiverId=$receiverId&amount=$amount',
+    );
 
-      if (response.statusCode == 200) {
-        print('✅ Payment Successful');
-        return true;
-      } else {
-        print('❌ Payment Failed: ${response.body}');
-        return false;
-      }
-    } catch (e) {
-      print('❌ Error in payment: $e');
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('✅ Payment Successful');
+      return true;
+    } else {
+      print('❌ Payment Failed: ${response.body}');
       return false;
     }
   }
+
 
   // Helper: get stored JWT token from SharedPreferences
   Future<String?> _getAuthToken() async {
@@ -131,6 +126,28 @@ class PaymentService {
     }
     return null;
   }
+
+  Future<AccountModel?> getAccountDetails(int userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('authToken');
+    final url = Uri.parse('$baseUrl/api/payment/$userId/account');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return AccountModel.fromJson(data);
+    } else {
+      throw Exception('Failed to load account');
+    }
+  }
+
 
 
 }

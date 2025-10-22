@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:general_insurance_management_system/page/accounts_details.dart';
 import 'package:general_insurance_management_system/page/login.dart';
 import 'package:general_insurance_management_system/page/user_accounts_page.dart';
 import 'package:general_insurance_management_system/service/auth_service.dart';
@@ -275,10 +276,18 @@ class UserPage extends StatelessWidget {
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.settings),
+              leading: const Icon(Icons.account_balance_wallet),
               title: const Text('Account'),
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AccountDetailsPage(userId: id),
+                  ),
+                );
+              },
             ),
+
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.redAccent),
