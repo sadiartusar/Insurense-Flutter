@@ -56,6 +56,7 @@ class _HomePageState extends State<HomePage> {
     '/viewcarreport',
     '/viewcarreports',
     '/viewcarmoneyreceiptreports',
+    '/paymentDetails'
   ];
 
   final List<Color> _cardColors = [
@@ -180,7 +181,7 @@ class _HomePageState extends State<HomePage> {
           ),
           _drawerItem(context, Icons.person, 'Profile', '/profile'),
           _drawerItem(context, Icons.contact_mail, 'Contact Us', '/contact'),
-          _drawerItem(context, Icons.business, 'Payment Details', '/headOffice'),
+          _drawerItem(context, Icons.business, 'Payment Details', '/paymentDetails'),
           _drawerItem(context, Icons.location_city, 'Volt Details', '/localOffice'),
           const Divider(),
           _drawerItem(context, Icons.login, 'Login', '/login'),

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/model/account_model.dart';
 import 'package:general_insurance_management_system/service/payment_service.dart';
+import 'package:intl/intl.dart';
 
 class AccountDetailsPage extends StatefulWidget {
-  final int userId;
-  const AccountDetailsPage({super.key, required this.userId});
+  const AccountDetailsPage({super.key});
 
   @override
   State<AccountDetailsPage> createState() => _AccountDetailsPageState();
@@ -24,7 +24,7 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
 
   Future<void> _loadAccount() async {
     try {
-      final account = await _service.getAccountDetails(widget.userId);
+      final account = await _service.getLoggedInUserAccount();
       setState(() {
         _account = account;
         _loading = false;
@@ -35,6 +35,16 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
         _loading = false;
       });
     }
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'N/A';
+    return DateFormat('dd-MM-yyyy hh:mm a').format(date);
+  }
+
+  String _formatAmount(double amount) {
+    final formatter = NumberFormat.currency(locale: 'en', symbol: '৳');
+    return formatter.format(amount);
   }
 
   @override
@@ -60,17 +70,28 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
               children: [
                 Text('🆔 ID: ${_account!.id}',
                     style: const TextStyle(fontSize: 18)),
-                Text('💰 Amount: ${_account!.amount}',
-                    style: const TextStyle(fontSize: 18)),
+                const SizedBox(height: 8),
                 Text('👤 Name: ${_account!.name}',
                     style: const TextStyle(fontSize: 18)),
-                if (_account!.paymentDate != null)
-                  Text(
-                      '📅 Date: ${_account!.paymentDate!.toLocal()}',
+                const SizedBox(height: 8),
+                Text('💰 Amount: ${_formatAmount(_account!.amount)}',
+                    style: const TextStyle(fontSize: 18)),
+                const SizedBox(height: 8),
+                Text(
+                    '💳 Mode: ${_account!.paymentMode ?? 'N/A'}',
+                    style: const TextStyle(fontSize: 16)),
+                const SizedBox(height: 8),
+                Text(
+                    '📅 Date: ${_formatDate(_account!.paymentDate)}',
+                    style: const TextStyle(fontSize: 16)),
+                if (_account!.user != null) ...[
+                  const SizedBox(height: 8),
+                  Text('📧 Email: ${_account!.user!.email}',
                       style: const TextStyle(fontSize: 16)),
-                if (_account!.paymentMode != null)
-                  Text('💳 Mode: ${_account!.paymentMode}',
+                  const SizedBox(height: 8),
+                  Text('📞 Phone: ${_account!.user!.phone}',
                       style: const TextStyle(fontSize: 16)),
+                ],
               ],
             ),
           ),

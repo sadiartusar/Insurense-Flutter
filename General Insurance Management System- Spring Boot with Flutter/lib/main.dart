@@ -10,6 +10,7 @@ import 'package:general_insurance_management_system/page/admin_profile.dart';
 import 'package:general_insurance_management_system/page/home.dart';
 import 'package:general_insurance_management_system/page/login.dart';
 import 'package:general_insurance_management_system/page/registration.dart';
+import 'package:general_insurance_management_system/page/volt_account_page.dart';
 import 'package:general_insurance_management_system/reports/fire_bill_reports.dart';
 import 'package:general_insurance_management_system/reports/fire_money_receipt_report.dart';
 import 'package:general_insurance_management_system/reports/fire_policy_reports.dart';
@@ -45,6 +46,7 @@ class _MyAppState extends State<MyApp> {
         '/viewfiremoneyreceiptreports': (context) =>FireMoneyReceiptReportPage(),
         '/viewcarbill': (context) => AllCarBillView(),
         '/viewcarmoneyreceipt': (context) => AllCarMoneyReceiptView(),
+        '/paymentDetails': (context) => PaymentDetailsPage(),
         // ✅ Keep your other routes as needed
       },
 

@@ -8,6 +8,38 @@ class AuthService {
 
   /// ✅ Login method
   /// Sends credentials, gets a JWT, decodes it, and stores token + role.
+  // Future<bool> login(String email, String password) async {
+  //   final url = Uri.parse('$baseUrl/api/user/login');
+  //   final headers = {'Content-Type': 'application/json'};
+  //   final body = jsonEncode({'email': email, 'password': password});
+  //
+  //   final response = await http.post(url, headers: headers, body: body);
+  //
+  //   if (response.statusCode == 200) {
+  //     final data = jsonDecode(response.body);
+  //     final String token = data['token'];
+  //
+  //     // Decode token to extract role
+  //     final Map<String, dynamic> payload = Jwt.parseJwt(token);
+  //     final String role = payload['role'];
+  //
+  //     // Save token, role, and optionally user info
+  //     final prefs = await SharedPreferences.getInstance();
+  //     await prefs.setString('authToken', token);
+  //     await prefs.setString('userRole', role);
+  //
+  //     // ✅ If backend returns user info in login response, save it
+  //     if (data.containsKey('user')) {
+  //       await prefs.setString('user', jsonEncode(data['user']));
+  //     }
+  //
+  //     return true;
+  //   } else {
+  //     print('❌ Failed to log in: ${response.body}');
+  //     return false;
+  //   }
+  // }
+
   Future<bool> login(String email, String password) async {
     final url = Uri.parse('$baseUrl/api/user/login');
     final headers = {'Content-Type': 'application/json'};
@@ -19,26 +51,69 @@ class AuthService {
       final data = jsonDecode(response.body);
       final String token = data['token'];
 
-      // Decode token to extract role
+      // Decode token for role
       final Map<String, dynamic> payload = Jwt.parseJwt(token);
-      final String role = payload['role'];
+      final String role = payload['role'] ?? payload['rol'] ?? 'USER';
 
-      // Save token, role, and optionally user info
+      int? userId;
+
+      // ✅ Only fetch userId for USER, not for ADMIN
+      if (role == 'USER') {
+        if (data.containsKey('user') &&
+            data['user'] != null &&
+            data['user']['id'] != null) {
+          userId = data['user']['id'];
+        }
+
+        if (userId == null) {
+          userId = await _fetchUserIdFromProfile(token);
+        }
+
+        if (userId == null) {
+          print('User ID not found in login response or profile');
+          return false;
+        }
+      }
+
+      // Save token, role, and (only for USER) userId
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('authToken', token);
       await prefs.setString('userRole', role);
 
-      // ✅ If backend returns user info in login response, save it
-      if (data.containsKey('user')) {
-        await prefs.setString('user', jsonEncode(data['user']));
+      if (userId != null) {
+        await prefs.setInt('userId', userId);
       }
 
+      print("✅ Login success as $role");
       return true;
     } else {
-      print('❌ Failed to log in: ${response.body}');
+      print('Login failed: ${response.body}');
       return false;
     }
   }
+
+
+  // Fetch user profile to get user ID if not in login response
+  Future<int?> _fetchUserIdFromProfile(String token) async {
+    final url = Uri.parse('$baseUrl/api/user/profile');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+    if (response.statusCode == 200) {
+      final profileData = jsonDecode(response.body);
+      if (profileData != null && profileData['id'] != null) {
+        return profileData['id'];
+      }
+    } else {
+      print('Failed to fetch profile: ${response.statusCode}');
+    }
+    return null;
+  }
+
 
 
   Future<bool> register(Map<String, dynamic> user) async {
@@ -194,6 +269,8 @@ class AuthService {
       return 'Network Error: $e';
     }
   }
+
+
 
 
 }

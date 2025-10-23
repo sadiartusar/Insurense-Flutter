@@ -282,14 +282,13 @@ class _LoginPageState extends State<LoginPage> {
       final role = await authService.getUserRole();
 
       if (role == 'ADMIN') {
-        // Admin route
+        // 👉 যদি Admin হয়, তাহলে HomePage এ যাবে
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomePage()),
         );
-      }
-      else if (role == 'USER') {
-        // ✅ Fetch user profile before navigating
+      } else if (role == 'USER') {
+        // 👉 যদি User হয়, তাহলে তার Profile লোড করে UserPage এ যাবে
         final profile = await authService.getUserProfile();
 
         if (profile != null) {
@@ -302,8 +301,7 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           _showErrorDialog('Error', 'Failed to load user profile.');
         }
-      }
-      else {
+      } else {
         _showErrorDialog('Access Denied', 'Unknown user role.');
       }
     } catch (error) {
@@ -311,6 +309,7 @@ class _LoginPageState extends State<LoginPage> {
       _showErrorDialog('Login Error', 'Something went wrong. Try again later.');
     }
   }
+
 
 
   // Función de ayuda para mostrar errores al usuario
