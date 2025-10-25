@@ -19,18 +19,21 @@ class PrintCarMoneyReceipt extends StatelessWidget {
   double get _carRate => moneyreceipt.carBill?.carRate ?? 0.0;
   double get _rsdRate => moneyreceipt.carBill?.rsd ?? 0.0;
   double get _taxRate => moneyreceipt.carBill?.tax ?? 0.0;
+  double get _netPremium => moneyreceipt.carBill?.netPremium ?? 0.0;
 
-  double get _totalCarRate => _carRate * _sumInsured;
+  double get _grossPremium => moneyreceipt.carBill?.grossPremium ?? 0.0;
 
-  double get _totalRsd => _rsdRate * _sumInsured;
+  // double get _totalCarRate => (_carRate * _sumInsured)/100;
+  //
+  // double get _totalRsd => (_rsdRate * _sumInsured)/100;
+  //
+  // double get _totalNetPremium => (_totalCarRate + _totalRsd)/100;
+  //
+  // double get _totalTax => (_totalNetPremium * _taxRate);
+  //
+  // double get _totalGrossPremiumWithTax => _totalNetPremium + _totalTax;
 
-  double get _totalNetPremium => _totalCarRate + _totalRsd;
-
-  double get _totalTax => _totalNetPremium * _taxRate;
-
-  double get _totalGrossPremiumWithTax => _totalNetPremium + _totalTax;
-
-  double get _monthlyPayableAmount => _totalGrossPremiumWithTax / 12;
+  double get _monthlyPayableAmount => _grossPremium / 12;
 
   // --- Date Formatting Helper ---
   String _formatDate(DateTime? date) =>
@@ -222,34 +225,31 @@ class PrintCarMoneyReceipt extends StatelessWidget {
       headers: ['Description', 'Rate', 'BDT', 'Amount'],
       data: [
         [
-          'Fire Rate',
-          '${(_carRate * 100).toStringAsFixed(2)}% on ${_sumInsured.toStringAsFixed(2)}',
+          'Car Rate',
+          '${(_carRate).toStringAsFixed(2)}% on ${_sumInsured.toStringAsFixed(2)}',
           'TK',
-          _totalCarRate.toStringAsFixed(2)
         ],
         [
           'RSD Rate',
-          '${(_rsdRate * 100).toStringAsFixed(2)}% on ${_sumInsured.toStringAsFixed(2)}',
+          '${(_rsdRate).toStringAsFixed(2)}% on ${_sumInsured.toStringAsFixed(2)}',
           'TK',
-          _totalRsd.toStringAsFixed(2)
         ],
         [
-          'Net Premium (Fire + RSD)',
+          'Net Premium (Car + RSD)',
           '',
           'TK',
-          _totalNetPremium.toStringAsFixed(2)
+
         ],
         [
           'Tax on Net Premium',
-          '${(_taxRate * 100).toStringAsFixed(2)}% on ${_totalNetPremium.toStringAsFixed(2)}',
+          '${(_taxRate).toStringAsFixed(2)}% on ${_netPremium.toStringAsFixed(2)}',
           'TK',
-          _totalTax.toStringAsFixed(2)
         ],
         [
           'Gross Premium with Tax',
           '',
           'TK',
-          _totalGrossPremiumWithTax.toStringAsFixed(2)
+          _grossPremium.toStringAsFixed(2)
         ],
         [
           'Monthly Payable Amount',
@@ -301,7 +301,7 @@ class PrintCarMoneyReceipt extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fire Cover Note Details', textAlign: TextAlign.center),
+        title: const Text('Car Cover Note Details', textAlign: TextAlign.center),
         backgroundColor: Colors.transparent, // Transparent for gradient
         flexibleSpace: Container(
           decoration: BoxDecoration(
@@ -330,7 +330,7 @@ class PrintCarMoneyReceipt extends StatelessWidget {
                     context, 'Cover Note No:', moneyreceipt.issuedAgainst ?? "N/A",
                     isBold: true),
                 _buildCardRow(
-                    context, 'Fire Bill No:', moneyreceipt.carBill?.carPolicy.id?.toString() ?? "N/A"),
+                    context, 'Car Bill No:', moneyreceipt.carBill?.carPolicy.id?.toString() ?? "N/A"),
                 _buildCardRow(
                     context, 'Issue Date:', _formatDate(moneyreceipt.carBill?.carPolicy.date)),
                 const Divider(height: 15),
@@ -372,15 +372,15 @@ class PrintCarMoneyReceipt extends StatelessWidget {
               title: "Premium Calculation",
               icon: Icons.calculate_outlined,
               children: [
-                _buildCalculationRow(context, 'Fire Rate',
-                    '${(_carRate * 100).toStringAsFixed(2)}%', _totalCarRate),
+                _buildCalculationRow(context, 'Car Rate',
+                    '${(_carRate ).toStringAsFixed(2)}%', _carRate),
                 _buildCalculationRow(context, 'RSD Rate',
-                    '${(_rsdRate * 100).toStringAsFixed(2)}%', _totalRsd),
+                    '${(_rsdRate).toStringAsFixed(2)}%', _rsdRate),
                 const Divider(),
                 _buildCalculationRow(context, 'Net Premium', 'Total',
-                    _totalNetPremium, isNet: true),
+                    _netPremium, isNet: true),
                 _buildCalculationRow(context, 'Tax Rate',
-                    '${(_taxRate * 100).toStringAsFixed(2)}%', _totalTax),
+                    '${(_taxRate).toStringAsFixed(2)}%', _taxRate),
               ],
             ),
             const SizedBox(height: 16),
@@ -524,7 +524,7 @@ class PrintCarMoneyReceipt extends StatelessWidget {
           _buildTotalRow(
             context,
             'GROSS PREMIUM (with Tax)',
-            _totalGrossPremiumWithTax,
+            _grossPremium,
             isFinal: true,
           ),
           const Divider(height: 20, thickness: 1.5, color: Colors.deepPurple),

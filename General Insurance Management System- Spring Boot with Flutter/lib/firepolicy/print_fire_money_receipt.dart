@@ -6,31 +6,49 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'dart:ui'; // BackdropFilter এর জন্য
+import 'dart:ui';
 
 class PrintFireMoneyReceipt extends StatelessWidget {
   final FireMoneyReceiptModel moneyreceipt;
 
   const PrintFireMoneyReceipt({super.key, required this.moneyreceipt});
 
-  // কনস্ট্যান্টগুলি অপরিবর্তিত
   static const double _defaultFontSize = 14;
 
+  // *******************************************************************
+  // ✅ FIX: গণনার লজিক পরিবর্তন করা হলো।
+  // API থেকে সরাসরি প্রিমিয়াম মানগুলো ব্যবহার করা হচ্ছে।
+  // *******************************************************************
+
   double get _sumInsured => moneyreceipt.fireBill?.firePolicy.sumInsured ?? 0.0;
-  double get _fireRate => moneyreceipt.fireBill?.fire ?? 0.0;
-  double get _rsdRate => moneyreceipt.fireBill?.rsd ?? 0.0;
-  double get _taxRate => moneyreceipt.fireBill?.tax ?? 0.0;
-  double get _totalFire => _fireRate * _sumInsured;
-  double get _totalRsd => _rsdRate * _sumInsured;
-  double get _totalNetPremium => _totalFire + _totalRsd;
-  double get _totalTax => _totalNetPremium * _taxRate;
-  double get _totalGrossPremiumWithTax => _totalNetPremium + _totalTax;
-  double get _monthlyPayableAmount => _totalGrossPremiumWithTax / 12;
+
+  // API থেকে আসা সরাসরি মানগুলো ব্যবহার করা হয়েছে:
+  double get _firePremium => moneyreceipt.fireBill?.fire ?? 0.0;
+  double get _rsdPremium => moneyreceipt.fireBill?.rsd ?? 0.0;
+  double get _netPremium => moneyreceipt.fireBill?.netPremium ?? 0.0;
+  double get _taxAmount => moneyreceipt.fireBill?.tax ?? 0.0;
+  double get _grossPremium => moneyreceipt.fireBill?.grossPremium ?? 0.0;
+
+  // মাসিক প্রিমিয়াম গণনা (Gross Premium-কে 12 দিয়ে ভাগ করা হয়েছে)
+  double get _monthlyPayableAmount => _grossPremium / 12.0;
+
+  // *******************************************************************
 
   String _formatDate(DateTime? date) =>
       date != null ? DateFormat('dd-MM-yyyy').format(date) : "N/A";
 
-  // PDF লজিক অপরিবর্তিত
+  // এই ফাংশনটি শুধু ফরমেটিং এর জন্য, গণনা নয়।
+  // তাই এটি নিরাপদভাবে ব্যবহার করা যাবে।
+  String _formatCurrency(double amount) {
+    // Tk. বা Taka প্রতীক সহ 2 দশমিক স্থান পর্যন্ত ফরমেট করা হলো
+    return NumberFormat.currency(
+      locale: 'en_US',
+      symbol: 'TK',
+      decimalDigits: 2,
+    ).format(amount);
+  }
+
+  // PDF লজিক আপডেট করা হলো
   Future<pw.Document> _generatePdf(BuildContext context) async {
     final pdf = pw.Document();
     pdf.addPage(
@@ -38,7 +56,7 @@ class PrintFireMoneyReceipt extends StatelessWidget {
         pageFormat: PdfPageFormat.a4,
         build: (context) => pw.Center(
           child: pw.Text(
-            "Fire Cover Note\n\nPolicyholder: ${moneyreceipt.fireBill?.firePolicy.policyholder ?? 'N/A'}\nSum Insured: ${_sumInsured.toStringAsFixed(2)} TK\nGross Premium: ${_totalGrossPremiumWithTax.toStringAsFixed(2)} TK",
+            "Fire Cover Note\n\nPolicyholder: ${moneyreceipt.fireBill?.firePolicy.policyholder ?? 'N/A'}\nSum Insured: ${_formatCurrency(_sumInsured)}\nGross Premium: ${_formatCurrency(_grossPremium)}",
           ),
         ),
       ),
@@ -48,7 +66,6 @@ class PrintFireMoneyReceipt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Scaffold এবং body এর স্ট্রাকচার রেসপনসিভ আছে
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fire Cover Note Details'),
@@ -63,7 +80,24 @@ class PrintFireMoneyReceipt extends StatelessWidget {
           children: [
             _buildSmartCard(
               context,
-              title: "Bill & Insured Information",
+              title: "Premium Breakdown",
+              icon: Icons.calculate_outlined,
+              children: [
+                _buildCardRow(context, 'Fire Premium:',
+                    _formatCurrency(_firePremium)),
+                _buildCardRow(context, 'RSD Premium:',
+                    _formatCurrency(_rsdPremium)),
+                _buildCardRow(context, 'Net Premium:',
+                    _formatCurrency(_netPremium),
+                    isBold: true),
+                _buildCardRow(context, 'Tax Amount:',
+                    _formatCurrency(_taxAmount)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildSmartCard(
+              context,
+              title: "Policy & Insured Information",
               icon: Icons.assignment_ind_outlined,
               children: [
                 _buildCardRow(context, 'Cover Note No:',
@@ -73,13 +107,13 @@ class PrintFireMoneyReceipt extends StatelessWidget {
                     moneyreceipt.fireBill?.firePolicy.policyholder ?? "N/A",
                     isBold: true),
                 _buildCardRow(context, 'Sum Insured:',
-                    '${_sumInsured.toStringAsFixed(2)} TK'),
+                    _formatCurrency(_sumInsured)),
               ],
             ),
             const SizedBox(height: 16),
+            // ফিক্সড মান ব্যবহার করে সামারি কার্ড
             _buildTotalSummaryCard(context),
             const SizedBox(height: 20),
-            // ✅ Row এর পরিবর্তে Column ব্যবহার করা হয়েছে যাতে ছোট স্ক্রিনে বাটন ওভারফ্লো না করে
             _buildActionButtons(context),
             const SizedBox(height: 10),
             _buildSendButton(context),
@@ -89,9 +123,8 @@ class PrintFireMoneyReceipt extends StatelessWidget {
     );
   }
 
-  /// ✅ Send Button — Admin selects user email and sends data
+  /// Send Button
   Widget _buildSendButton(BuildContext context) {
-    // এই লজিকটি ডেটাবেস অপারেশন এবং ডায়ালগ ডিসপ্লে এর জন্য, যা স্ক্রিন সাইজের উপর নির্ভরশীল নয়
     return ElevatedButton.icon(
       icon: const Icon(Icons.send),
       label: const Text('Send to User'),
@@ -124,18 +157,17 @@ class PrintFireMoneyReceipt extends StatelessWidget {
                 ElevatedButton(
                   child: const Text("Send"),
                   onPressed: () async {
-                    // ... (API কল লজিক অপরিবর্তিত) ...
                     if (selectedEmail != null) {
                       final dataToSend = {
                         "recipientEmail": selectedEmail,
                         "coverNoteNo": moneyreceipt.issuedAgainst ?? "N/A",
                         "policyholder": moneyreceipt.fireBill?.firePolicy.policyholder ?? "N/A",
                         "sumInsured": _sumInsured,
-                        "grossPremium": _totalGrossPremiumWithTax,
-                        "monthlyPremium": _monthlyPayableAmount,
-                        "fireRate": _fireRate,
-                        "rsdRate": _rsdRate,
-                        "taxRate": _taxRate,
+                        "grossPremium": _grossPremium, // ✅ ফিক্সড ভ্যালু
+                        "monthlyPremium": _monthlyPayableAmount, // ✅ ফিক্সড ভ্যালু
+                        // "fireRate": moneyreceipt.fireBill?.fire ?? 0.0, // রেট নয়, অ্যামাউন্ট
+                        // "rsdRate": moneyreceipt.fireBill?.rsd ?? 0.0,
+                        // "taxRate": moneyreceipt.fireBill?.tax ?? 0.0,
                         "issuedAt": DateTime.now().toIso8601String(),
                       };
 
@@ -179,7 +211,6 @@ class PrintFireMoneyReceipt extends StatelessWidget {
   // ------- Smart UI helper widgets ---------
   Widget _buildSmartCard(BuildContext context,
       {required String title, required IconData icon, required List<Widget> children}) {
-    // এই কার্ডটি স্ক্রিনের প্রস্থ অনুযায়ী নিজে থেকেই রেসপনসিভ হবে
     return ClipRRect(
       borderRadius: BorderRadius.circular(15),
       child: BackdropFilter(
@@ -204,7 +235,6 @@ class PrintFireMoneyReceipt extends StatelessWidget {
                 children: [
                   Icon(icon, color: Colors.deepPurple, size: 24),
                   const SizedBox(width: 8),
-                  // টেক্সট ওভারফ্লো এড়াতে Flexible ব্যবহার করা যেতে পারে, তবে সাধারণত হেডার টেক্সট ছোট হয়
                   Flexible(
                     child: Text(
                       title,
@@ -225,25 +255,22 @@ class PrintFireMoneyReceipt extends StatelessWidget {
     );
   }
 
-  // ✅ রেসপনসিভ ফিক্স: Long value text overflow এড়াতে Expanded/Flexible ব্যবহার করা হয়েছে
   Widget _buildCardRow(BuildContext context, String title, String value,
       {bool isBold = false, Color? color}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start, // লম্বা টেক্সট এর জন্য
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // টাইটেল এর জন্য সীমিত প্রস্থ (উদাহরণস্বরূপ 50% বা তার কম)
           SizedBox(
-            width: MediaQuery.of(context).size.width * 0.4, // প্রায় 40% স্ক্রিন
+            width: MediaQuery.of(context).size.width * 0.4,
             child: Text(title,
                 style: TextStyle(
                     fontSize: _defaultFontSize,
                     fontWeight: isBold ? FontWeight.w600 : FontWeight.normal,
                     color: Colors.grey.shade700)),
           ),
-          // ভ্যালুর জন্য বাকি স্পেস
           Expanded(
             child: Text(
               value,
@@ -269,9 +296,11 @@ class PrintFireMoneyReceipt extends StatelessWidget {
       ),
       child: Column(
         children: [
+          // ✅ FIX: _grossPremium ব্যবহার করা হয়েছে
           _buildTotalRow(context, 'GROSS PREMIUM (with Tax)',
-              _totalGrossPremiumWithTax, isFinal: true),
+              _grossPremium, isFinal: true),
           const Divider(height: 20, thickness: 1.5, color: Colors.deepPurple),
+          // ✅ FIX: _monthlyPayableAmount ব্যবহার করা হয়েছে
           _buildTotalRow(
               context, 'MONTHLY PAYABLE AMOUNT', _monthlyPayableAmount,
               isMonthly: true),
@@ -280,13 +309,11 @@ class PrintFireMoneyReceipt extends StatelessWidget {
     );
   }
 
-  // ✅ রেসপনসিভ ফিক্স: Long title text overflow এড়াতে Row কে Flexible/Expanded দিয়ে সুরক্ষিত করা
   Widget _buildTotalRow(BuildContext context, String title, double amount,
       {bool isFinal = false, bool isMonthly = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // টাইটেল ওভারফ্লো এড়াতে Flexible
         Flexible(
           child: Text(title,
               style: TextStyle(
@@ -296,9 +323,9 @@ class PrintFireMoneyReceipt extends StatelessWidget {
                       ? Colors.deepPurple.shade800
                       : (isMonthly ? Colors.green.shade700 : Colors.black87))),
         ),
-        const SizedBox(width: 8), // টেক্সটের মাঝখানে সামান্য গ্যাপ
-        // অ্যামাউন্ট ফিক্সড, কিন্তু টেক্সট ওভারফ্লো এড়াতে দরকার
-        Text('${amount.toStringAsFixed(2)} TK',
+        const SizedBox(width: 8),
+        // ✅ ফিক্সড কারেন্সি ফরমেটিং ব্যবহার করা হয়েছে
+        Text(_formatCurrency(amount),
             style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
@@ -309,9 +336,7 @@ class PrintFireMoneyReceipt extends StatelessWidget {
     );
   }
 
-  // ✅ রেসপনসিভ ফিক্স: ছোট স্ক্রিনে বাটনগুলিকে উল্লম্বভাবে সাজানো (Vertical Layout)
   Widget _buildActionButtons(BuildContext context) {
-    // 600 পিক্সেলের নিচে গেলে Column ব্যবহার করা
     if (MediaQuery.of(context).size.width < 600) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -340,7 +365,6 @@ class PrintFireMoneyReceipt extends StatelessWidget {
         ],
       );
     } else {
-      // 600 পিক্সেল বা তার উপরে গেলে পাশাপাশি (Horizontal Layout)
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -374,7 +398,6 @@ class PrintFireMoneyReceipt extends StatelessWidget {
     }
   }
 
-  // বাটন তৈরি করার জন্য Helper function
   Widget _buildActionButton(
       {required IconData icon,
         required String label,
