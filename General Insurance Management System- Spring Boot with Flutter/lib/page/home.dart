@@ -56,7 +56,9 @@ class _HomePageState extends State<HomePage> {
     '/viewcarreport',
     '/viewcarreports',
     '/viewcarmoneyreceiptreports',
-    '/paymentDetails'
+    '/paymentDetails',
+    '/alluser',
+    '/voltaccount'
   ];
 
   final List<Color> _cardColors = [
@@ -179,10 +181,10 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          _drawerItem(context, Icons.person, 'Profile', '/profile'),
+          _drawerItem(context, Icons.person, 'All User', '/alluser'),
           _drawerItem(context, Icons.contact_mail, 'Contact Us', '/contact'),
           _drawerItem(context, Icons.business, 'Payment Details', '/paymentDetails'),
-          _drawerItem(context, Icons.location_city, 'Volt Details', '/localOffice'),
+          _drawerItem(context, Icons.location_city, 'Volt Details', '/voltaccount'),
           const Divider(),
           _drawerItem(context, Icons.login, 'Login', '/login'),
           _drawerItem(context, Icons.logout, 'Logout', '/login'),

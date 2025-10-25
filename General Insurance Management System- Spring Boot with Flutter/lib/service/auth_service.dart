@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:general_insurance_management_system/model/user_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,57 +41,124 @@ class AuthService {
   //   }
   // }
 
+  // Future<bool> login(String email, String password) async {
+  //   final url = Uri.parse('$baseUrl/api/user/login');
+  //   final headers = {'Content-Type': 'application/json'};
+  //   final body = jsonEncode({'email': email, 'password': password});
+  //
+  //   final response = await http.post(url, headers: headers, body: body);
+  //
+  //   if (response.statusCode == 200) {
+  //     final data = jsonDecode(response.body);
+  //     final String token = data['token'];
+  //
+  //     // Decode token for role
+  //     final Map<String, dynamic> payload = Jwt.parseJwt(token);
+  //     final String role = payload['role'] ?? payload['rol'] ?? 'USER';
+  //
+  //     int? userId;
+  //
+  //     // ✅ Only fetch userId for USER, not for ADMIN
+  //     if (role == 'USER') {
+  //       if (data.containsKey('user') &&
+  //           data['user'] != null &&
+  //           data['user']['id'] != null) {
+  //         userId = data['user']['id'];
+  //       }
+  //
+  //       if (userId == null) {
+  //         userId = await _fetchUserIdFromProfile(token);
+  //       }
+  //
+  //       if (userId == null) {
+  //         print('User ID not found in login response or profile');
+  //         return false;
+  //       }
+  //     }
+  //
+  //     // Save token, role, and (only for USER) userId
+  //     final prefs = await SharedPreferences.getInstance();
+  //     await prefs.setString('authToken', token);
+  //     await prefs.setString('userRole', role);
+  //
+  //     if (userId != null) {
+  //       await prefs.setInt('userId', userId);
+  //     }
+  //
+  //     print("✅ Login success as $role");
+  //     return true;
+  //   } else {
+  //     print('Login failed: ${response.body}');
+  //     return false;
+  //   }
+  // }
+
   Future<bool> login(String email, String password) async {
     final url = Uri.parse('$baseUrl/api/user/login');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({'email': email, 'password': password});
 
-    final response = await http.post(url, headers: headers, body: body);
+    try {
+      final response = await http.post(url, headers: headers, body: body);
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final String token = data['token'];
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String token = data['token'];
 
-      // Decode token for role
-      final Map<String, dynamic> payload = Jwt.parseJwt(token);
-      final String role = payload['role'] ?? payload['rol'] ?? 'USER';
+        // ✅ Decode token to get role safely
+        final Map<String, dynamic> payload = Jwt.parseJwt(token);
+        final String role = payload['role'] ?? payload['rol'] ?? 'USER';
 
-      int? userId;
+        int? userId;
+        String? userEmail;
+        String? userName;
 
-      // ✅ Only fetch userId for USER, not for ADMIN
-      if (role == 'USER') {
-        if (data.containsKey('user') &&
-            data['user'] != null &&
-            data['user']['id'] != null) {
-          userId = data['user']['id'];
+        // ✅ Only for USER role
+        if (role == 'USER') {
+          if (data.containsKey('user') && data['user'] != null) {
+            final user = data['user'];
+            userId = user['id'];
+            userEmail = user['email'];
+            userName = user['name'];
+          }
+
+          // যদি backend login response এ user না দেয়, তাহলে profile থেকে আনি
+          if (userId == null) {
+            final profileData = await _fetchUserProfile(token);
+            if (profileData != null) {
+              userId = profileData['id'];
+              userEmail = profileData['email'];
+              userName = profileData['name'];
+            }
+          }
+
+          if (userId == null) {
+            print('⚠️ User ID not found.');
+            return false;
+          }
         }
 
-        if (userId == null) {
-          userId = await _fetchUserIdFromProfile(token);
-        }
+        // ✅ Save credentials securely
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('authToken', token);
+        await prefs.setString('userRole', role);
 
-        if (userId == null) {
-          print('User ID not found in login response or profile');
-          return false;
-        }
+        if (userId != null) await prefs.setInt('userId', userId);
+        if (userEmail != null) await prefs.setString('userEmail', userEmail);
+        if (userName != null) await prefs.setString('userName', userName);
+
+        print("✅ Login success as $role (${userEmail ?? 'Unknown user'})");
+        return true;
+      } else {
+        print('❌ Login failed: ${response.statusCode} - ${response.body}');
+        return false;
       }
-
-      // Save token, role, and (only for USER) userId
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('authToken', token);
-      await prefs.setString('userRole', role);
-
-      if (userId != null) {
-        await prefs.setInt('userId', userId);
-      }
-
-      print("✅ Login success as $role");
-      return true;
-    } else {
-      print('Login failed: ${response.body}');
+    } catch (e) {
+      print('🚨 Login error: $e');
       return false;
     }
   }
+
 
 
   // Fetch user profile to get user ID if not in login response
@@ -270,6 +338,59 @@ class AuthService {
     }
   }
 
+  /// ✅ Fetch all users (ADMIN only)
+  Future<List<UserModel>> fetchAllUsers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('authToken');
+    final role = prefs.getString('userRole');
+
+    if (token == null) {
+      throw Exception('❌ No token found. Please login first.');
+    }
+
+    if (role != 'ADMIN') {
+      throw Exception('⛔ Access denied. Only ADMIN can view all users.');
+    }
+
+    const String url = 'http://localhost:8085/api/user/all';
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => UserModel.fromJson(json)).toList();
+    } else if (response.statusCode == 403) {
+      throw Exception('🚫 Unauthorized: Admin access required.');
+    } else {
+      throw Exception(
+          '❌ Failed to fetch users. Status: ${response.statusCode}, Body: ${response.body}');
+    }
+  }
+
+
+  Future<Map<String, dynamic>?> _fetchUserProfile(String token) async {
+    final url = Uri.parse('$baseUrl/api/user/profile');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print('❌ Failed to fetch profile: ${response.statusCode}');
+      return null;
+    }
+  }
 
 
 

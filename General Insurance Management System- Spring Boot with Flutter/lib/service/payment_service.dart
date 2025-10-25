@@ -135,4 +135,30 @@ class PaymentService {
 
     return response.statusCode == 200;
   }
+
+  Future<List<Map<String, dynamic>>> fetchCompanyVoltDetails() async {
+    final url = Uri.parse('$baseUrl/showcompanydetails');
+
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString('authToken');
+    if (token == null) {
+      throw Exception('Admin authentication token not found. Please log in.');
+    }
+
+    final response = await http.get(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token', // JWT Token (Admin)
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = jsonDecode(response.body);
+      return jsonList.cast<Map<String, dynamic>>();
+    } else {
+      print("Failed to load company details. Status: ${response.statusCode}");
+      throw Exception('Failed to load company details. Status: ${response.statusCode}');
+    }
+  }
 }

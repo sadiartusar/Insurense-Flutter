@@ -58,7 +58,7 @@ class CarBillService {
     final String? token = prefs.getString('authToken');
 
     final response = await http.post(
-      Uri.parse('$baseUrl/add?policyId=${bill.carPolicy.id}'),
+      Uri.parse('$baseUrl/add?carPolicyId=${bill.carPolicy.id}'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': token != null ? 'Bearer $token' : '',

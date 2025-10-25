@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/carpolicy/view_car_bill.dart';
 import 'package:general_insurance_management_system/carpolicy/view_car_money_receipt.dart';
@@ -7,6 +9,8 @@ import 'package:general_insurance_management_system/firepolicy/view_fire_bill.da
 import 'package:general_insurance_management_system/firepolicy/view_fire_money_receipt.dart';
 import 'package:general_insurance_management_system/firepolicy/view_firepolicy.dart';
 import 'package:general_insurance_management_system/page/admin_profile.dart';
+import 'package:general_insurance_management_system/page/all_user.dart';
+import 'package:general_insurance_management_system/page/company_account_details.dart';
 import 'package:general_insurance_management_system/page/home.dart';
 import 'package:general_insurance_management_system/page/login.dart';
 import 'package:general_insurance_management_system/page/registration.dart';
@@ -15,9 +19,48 @@ import 'package:general_insurance_management_system/reports/fire_bill_reports.da
 import 'package:general_insurance_management_system/reports/fire_money_receipt_report.dart';
 import 'package:general_insurance_management_system/reports/fire_policy_reports.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  FirebaseOptions firebaseOptions;
+
+  if (kIsWeb) {
+    firebaseOptions = const FirebaseOptions(
+      apiKey: "WEB_API_KEY",
+      appId: "WEB_APP_ID",
+      messagingSenderId: "WEB_SENDER_ID",
+      projectId: "WEB_PROJECT_ID",
+      storageBucket: "WEB_STORAGE_BUCKET",
+    );
+  } else if (defaultTargetPlatform == TargetPlatform.android) {
+    firebaseOptions = const FirebaseOptions(
+      apiKey: "ANDROID_API_KEY",
+      appId: "ANDROID_APP_ID",
+      messagingSenderId: "ANDROID_SENDER_ID",
+      projectId: "ANDROID_PROJECT_ID",
+      storageBucket: "ANDROID_STORAGE_BUCKET",
+    );
+  } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+    firebaseOptions = const FirebaseOptions(
+      apiKey: "IOS_API_KEY",
+      appId: "IOS_APP_ID",
+      messagingSenderId: "IOS_SENDER_ID",
+      projectId: "IOS_PROJECT_ID",
+      storageBucket: "IOS_STORAGE_BUCKET",
+      iosBundleId: "YOUR_IOS_BUNDLE_ID",
+    );
+  } else {
+    throw UnsupportedError("This platform is not supported");
+  }
+
+  await Firebase.initializeApp(
+    options: firebaseOptions,
+  );
+
   runApp(const MyApp());
 }
+
+
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -47,6 +90,8 @@ class _MyAppState extends State<MyApp> {
         '/viewcarbill': (context) => AllCarBillView(),
         '/viewcarmoneyreceipt': (context) => AllCarMoneyReceiptView(),
         '/paymentDetails': (context) => PaymentDetailsPage(),
+        '/alluser': (context) => AllUsersPage(),
+        '/voltaccount':(context) => CompanyVoltDetailsPage()
         // ✅ Keep your other routes as needed
       },
 

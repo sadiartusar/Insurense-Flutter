@@ -33,31 +33,48 @@ class CarMoneyReceiptService {
     }
   }
 
-  // Create a new marine bill
-  Future<void> createMoneyReceipt(CarMoneyReceiptModel receipt, String policyId, {String? token}) async {
+  Future<void> createMoneyReceipt(
+  CarMoneyReceiptModel  receipt,
+      int carBillId,
+      ) async {
     final prefs = await SharedPreferences.getInstance();
-    final String? token = prefs.getString('token');
+    final token = prefs.getString('authToken'); // ✅ same key everywhere
+
     final headers = {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     };
 
-    final response = await http.post(Uri.parse(baseUrl + "/add"),
+    final url = Uri.parse('$baseUrl/add?carBillId=$carBillId');
+
+    final response = await http.post(
+      url,
       headers: headers,
       body: jsonEncode(receipt.toJson()),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to create Car bill');
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print('✅ Car Money Receipt created successfully');
+    } else {
+      print('❌ Error: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to create receipt: ${response.reasonPhrase}');
     }
   }
 
   /// Deletes a fire money receipt by ID.
   Future<bool> deleteMoneyReceipt(int id) async {
-    final String apiUrl = '${baseUrl}delete/$id';
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('authToken'); // ✅ consistent key
+
+    final headers = {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+
+    final url = Uri.parse('$baseUrl/$id');
 
     try {
-      final response = await http.delete(Uri.parse(apiUrl));
+      final response = await http.delete(url, headers:headers);
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         return true; // Deletion successful

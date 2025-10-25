@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:general_insurance_management_system/page/data_store.dart';
 import 'package:general_insurance_management_system/page/home.dart';
 import 'package:general_insurance_management_system/page/registration.dart';
 import 'package:general_insurance_management_system/page/user_profile.dart';
@@ -273,7 +274,6 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> loginUser(BuildContext context) async {
     try {
       final success = await authService.login(email.text, password.text);
-
       if (!success) {
         _showErrorDialog('Login Failed', 'Invalid email or password.');
         return;
@@ -282,16 +282,14 @@ class _LoginPageState extends State<LoginPage> {
       final role = await authService.getUserRole();
 
       if (role == 'ADMIN') {
-        // 👉 যদি Admin হয়, তাহলে HomePage এ যাবে
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomePage()),
         );
       } else if (role == 'USER') {
-        // 👉 যদি User হয়, তাহলে তার Profile লোড করে UserPage এ যাবে
         final profile = await authService.getUserProfile();
-
         if (profile != null) {
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -309,6 +307,7 @@ class _LoginPageState extends State<LoginPage> {
       _showErrorDialog('Login Error', 'Something went wrong. Try again later.');
     }
   }
+
 
 
 

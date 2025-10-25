@@ -97,12 +97,12 @@ class _CreateCarBillState extends State<CreateCarBill> {
         }
 
         final newBill = CarBillModel(
-          carRate: double.parse(carRateController.text),
+            carRate: double.parse((carRateController.text),),
           rsd: double.parse(rsdController.text),
           netPremium: _parseControllerValue(netPremiumController.text),
           tax: _parseControllerValue(taxController.text),
           grossPremium: _parseControllerValue(grossPremiumController.text),
-          carPolicy: selectedPolicy,
+          carPolicy:  selectedPolicy,
         );
 
         final createdBill = await billService.createCarBill(newBill);

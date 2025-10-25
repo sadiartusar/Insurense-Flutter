@@ -113,7 +113,7 @@ class _AllCarBillViewState extends State<AllCarBillView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fire Bill List'),
+        title: const Text('Car Bill List'),
         centerTitle: true,
         flexibleSpace: Container(
           decoration: BoxDecoration(
@@ -260,7 +260,7 @@ class _AllCarBillViewState extends State<AllCarBillView> {
                                     spacing: 8,
                                     runSpacing: 4,
                                     children: [
-                                      Text('Fire: ${bill.carRate ?? 0}%', style: commonStyle),
+                                      Text('Car Rate: ${bill.carRate ?? 0}%', style: commonStyle),
                                       Text('RSD: ${bill.rsd ?? 0}%', style: commonStyle),
                                       Text('Net: ${bill.netPremium ?? 0}', style: commonStyle),
                                       Text('Tax: ${bill.tax ?? 0}%', style: commonStyle),

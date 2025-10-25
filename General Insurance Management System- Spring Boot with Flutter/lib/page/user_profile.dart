@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/page/accounts_details.dart';
+import 'package:general_insurance_management_system/page/data_store.dart';
 import 'package:general_insurance_management_system/page/login.dart';
+import 'package:general_insurance_management_system/page/money_receipt_for_user.dart';
 import 'package:general_insurance_management_system/page/user_accounts_page.dart';
 import 'package:general_insurance_management_system/service/auth_service.dart';
 import 'package:intl/intl.dart';
@@ -176,7 +178,7 @@ class UserPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Base image URL (change this to your backend image folder)
+
     const String baseUrl = "http://localhost:8085/images/users/";
     final String photoName = profile['photo'] ?? '';
     final String? photoUrl = (photoName.isNotEmpty) ? "$baseUrl$photoName" : null;
@@ -271,10 +273,22 @@ class UserPage extends StatelessWidget {
               onTap: () => Navigator.push(context,MaterialPageRoute(builder: (context) => const UserAccountsPage()),),
             ),
             ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () => Navigator.pop(context),
+              leading: const Icon(Icons.account_balance_wallet),
+              title: const Text('My Premium Amount'),
+              onTap: () {
+                Navigator.pop(context); // Close Drawer
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UserCoverNotesPage(),
+                  ),
+                );
+              },
             ),
+
+
+
             ListTile(
               leading: const Icon(Icons.account_balance_wallet),
               title: const Text('Account'),

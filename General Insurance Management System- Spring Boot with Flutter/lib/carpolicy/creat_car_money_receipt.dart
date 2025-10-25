@@ -117,7 +117,7 @@ class _CreateCarMoneyReceiptState extends State<CreateCarMoneyReceipt> {
             issuedAgainst: issuedAgainstController.text,
             carBill: selectedPolicy,
           ),
-          selectedPolicy.id.toString(),
+          selectedPolicy.id!,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
