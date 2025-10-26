@@ -15,10 +15,6 @@ class PrintFireMoneyReceipt extends StatelessWidget {
 
   static const double _defaultFontSize = 14;
 
-  // *******************************************************************
-  // ✅ FIX: গণনার লজিক পরিবর্তন করা হলো।
-  // API থেকে সরাসরি প্রিমিয়াম মানগুলো ব্যবহার করা হচ্ছে।
-  // *******************************************************************
 
   double get _sumInsured => moneyreceipt.fireBill?.firePolicy.sumInsured ?? 0.0;
 
@@ -37,10 +33,64 @@ class PrintFireMoneyReceipt extends StatelessWidget {
   String _formatDate(DateTime? date) =>
       date != null ? DateFormat('dd-MM-yyyy').format(date) : "N/A";
 
-  // এই ফাংশনটি শুধু ফরমেটিং এর জন্য, গণনা নয়।
-  // তাই এটি নিরাপদভাবে ব্যবহার করা যাবে।
+  String _convertToWords(double num) {
+    // (Unchanged logic for number to words)
+    const ones = [
+      "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+      "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
+      "Seventeen", "Eighteen", "Nineteen"
+    ];
+    const tens = [
+      "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy",
+      "Eighty", "Ninety"
+    ];
+
+    String words(int n) {
+      if (n == 0) return "";
+      if (n < 20) return ones[n];
+      if (n < 100) return '${tens[n ~/ 10]}${n % 10 != 0 ? " ${ones[n % 10]}" : ""}}';
+      if (n < 1000) return '${ones[n ~/ 100]} Hundred${n % 100 != 0 ? " ${words(n % 100)}" : ""}';
+      if (n < 1000000) return '${words(n ~/ 1000)} Thousand${n % 1000 != 0 ? " ${words(n % 1000)}" : ""}';
+      if (n < 1000000000) return '${words(n ~/ 1000000)} Million${n % 1000000 != 0 ? " ${words(n % 1000000)}" : ""}';
+      return "";
+    }
+
+    final intPart = num.toInt();
+    final decimalPart = ((num - intPart) * 100).toInt();
+
+    var result = words(intPart).trim();
+
+    if (decimalPart > 0) {
+      result += " Taka and ${words(decimalPart)} Point";
+    } else {
+      result += " Taka";
+    }
+
+    return result.trim().isEmpty ? "Zero Taka" : result.trim();
+  }
+
+  pw.Widget _buildHeader() { /* ... unchanged ... */
+    return pw.Center(
+      child: pw.Column(
+        children: [
+          pw.Text(
+            "Green Insurance Company Bangladesh Ltd",
+            style:
+            pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Text("DR Tower (14th floor), 65/2/2, Purana Paltan, Dhaka-1000."),
+          pw.Text("Tel: 02478853405 | Mob: 01763001787"),
+          pw.Text("Fax: +88 02 55112742"),
+          pw.Text("Email: info@ciclbd.com"),
+          pw.Text("Web: www.greeninsurance.com"),
+        ],
+      ),
+    );
+  }
+
+
   String _formatCurrency(double amount) {
-    // Tk. বা Taka প্রতীক সহ 2 দশমিক স্থান পর্যন্ত ফরমেট করা হলো
+
     return NumberFormat.currency(
       locale: 'en_US',
       symbol: 'TK',
@@ -49,20 +99,217 @@ class PrintFireMoneyReceipt extends StatelessWidget {
   }
 
   // PDF লজিক আপডেট করা হলো
+  // Future<pw.Document> _generatePdf(BuildContext context) async {
+  //   final pdf = pw.Document();
+  //   pdf.addPage(
+  //     pw.Page(
+  //       pageFormat: PdfPageFormat.a4,
+  //       build: (context) => pw.Center(
+  //         child: pw.Text(
+  //           "Fire Cover Note\n\nPolicyholder: ${moneyreceipt.fireBill?.firePolicy.policyholder ?? 'N/A'}\nSum Insured: ${_formatCurrency(_sumInsured)}\nGross Premium: ${_formatCurrency(_grossPremium)}",
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  //   return pdf;
+  // }
+
   Future<pw.Document> _generatePdf(BuildContext context) async {
     final pdf = pw.Document();
+
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
-        build: (context) => pw.Center(
-          child: pw.Text(
-            "Fire Cover Note\n\nPolicyholder: ${moneyreceipt.fireBill?.firePolicy.policyholder ?? 'N/A'}\nSum Insured: ${_formatCurrency(_sumInsured)}\nGross Premium: ${_formatCurrency(_grossPremium)}",
-          ),
+        build: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            pw.SizedBox(height: 5),
+            _buildFireBillInfo(),
+            _buildInsuredDetails(),
+            _buildInsuredCondition(),
+            _buildSumInsuredDetails(),
+            _buildSituationDetails(),
+            _buildPremiumAndTaxDetails(),
+            pw.SizedBox(height: 20),
+            _buildFooterDetails(),
+          ],
         ),
       ),
     );
+
     return pdf;
   }
+
+  pw.Widget _buildFireBillInfo() { /* ... unchanged ... */
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.center,
+      children: [
+        pw.Text("Fire Cover Note", style: _headerTextStyle()),
+        pw.SizedBox(height: 10),
+        pw.Table.fromTextArray(
+          data: [
+            [
+              'Fire Cover Note No', moneyreceipt.issuedAgainst ?? "N/A",
+              'Fire Bill No', moneyreceipt.fireBill?.firePolicy.id?.toString() ?? "N/A",
+              'Date', _formatDate(moneyreceipt.fireBill?.firePolicy.date),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  pw.Widget _buildInsuredDetails() { /* ... unchanged ... */
+    final policy = moneyreceipt.fireBill?.firePolicy;
+    final addressDetails = '${policy?.bankName ?? "N/A"}\n'
+        '${policy?.policyholder ?? "N/A"}\n'
+        '${policy?.address ?? "N/A"}';
+
+    return pw.Table.fromTextArray(
+      data: [
+        [
+          'The Insured Name & Address',
+          addressDetails,
+        ],
+      ],
+    );
+  }
+
+  pw.Widget _buildInsuredCondition() { /* ... unchanged ... */
+    final policy = moneyreceipt.fireBill?.firePolicy;
+    final sumInsuredInWords = _convertToWords(policy?.sumInsured ?? 0.0);
+
+    return pw.Table.fromTextArray(
+      data: [
+        [
+          'Having this day proposed to effect an insurance against Fire and/or Lightning for 12 (Twelve) months from ${_formatDate(policy?.periodFrom)} to ${_formatDate(policy?.periodTo)} on the usual terms and conditions of the company’s Fire Policy. Having paid the undernoted premium in cash/cheque/P.O/D.D./C.A, the following property is hereby insured to the extent of ($sumInsuredInWords) Only in the manner specified below:'
+        ],
+      ],
+    );
+  }
+
+  pw.Widget _buildSumInsuredDetails() { /* ... unchanged ... */
+    final policy = moneyreceipt.fireBill?.firePolicy;
+    final sumInsuredInWords = _convertToWords(policy?.sumInsured ?? 0.0);
+
+    return pw.Table.fromTextArray(
+      data: [
+        ['Stock Insured', policy?.stockInsured ?? "N/A"],
+        [
+          'Sum Insured',
+          'TK. ${policy?.sumInsured ?? "N/A"} ($sumInsuredInWords)',
+        ],
+      ],
+    );
+  }
+
+  pw.Widget _buildSituationDetails() { /* ... unchanged ... */
+    final policy = moneyreceipt.fireBill?.firePolicy;
+    final fields = {
+      'Interest Insured': policy?.interestInsured,
+      'Coverage': policy?.coverage,
+      'Location': policy?.location,
+      'Construction': policy?.construction,
+      'Owner': policy?.owner,
+      'Used As': policy?.usedAs,
+    };
+
+    return pw.Table(
+      border: pw.TableBorder.all(),
+      children: fields.entries
+          .map(
+            (e) => pw.TableRow(
+          children: [
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(5),
+              child: pw.Text(e.key, style: const pw.TextStyle(fontSize: _defaultFontSize)),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(5),
+              child: pw.Text(e.value ?? "N/A", style: const pw.TextStyle(fontSize: _defaultFontSize)),
+            ),
+          ],
+        ),
+      )
+          .toList(),
+    );
+  }
+
+  pw.Widget _buildPremiumAndTaxDetails() { /* ... unchanged ... */
+    return pw.Table.fromTextArray(
+      headers: ['Description', 'Rate', 'BDT', 'Amount'],
+      data: [
+        [
+          'Fire Rate',
+          '${(_firePremium).toStringAsFixed(2)}% on ${_sumInsured.toStringAsFixed(2)}',
+          'TK',
+        ],
+        [
+          'RSD Rate',
+          '${(_rsdPremium).toStringAsFixed(2)}% on ${_sumInsured.toStringAsFixed(2)}',
+          'TK',
+        ],
+        [
+          'Net Premium (Car + RSD)',
+          '',
+          'TK',
+
+        ],
+        [
+          'Tax on Net Premium',
+          '${(_taxAmount).toStringAsFixed(2)}% on ${_netPremium.toStringAsFixed(2)}',
+          'TK',
+        ],
+        [
+          'Gross Premium with Tax',
+          '',
+          'TK',
+          _grossPremium.toStringAsFixed(2)
+        ],
+        [
+          'Monthly Payable Amount',
+          '',
+          'TK',
+          _monthlyPayableAmount.toStringAsFixed(2)
+        ],
+      ],
+    );
+  }
+
+  pw.Widget _buildFooterDetails() { /* ... unchanged ... */
+    return pw.Row(
+      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+      children: [
+        pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('Renewal No:'),
+            pw.Text(
+                '${moneyreceipt.issuedAgainst} / ${moneyreceipt.fireBill?.firePolicy.id?.toString() ?? "N/A"} / ${_formatDate(moneyreceipt.fireBill?.firePolicy.date)}'),
+            pw.Text('Checked by __________________'),
+          ],
+        ),
+        pw.Column(
+          children: [
+            pw.Text('Fully Re-insured with'),
+            pw.Text('Sadharan Bima Corporation'),
+          ],
+        ),
+        pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.end,
+          children: [
+            pw.Text('For & on behalf of'),
+            pw.Text('Green Insurance Com. Ltd.'),
+            pw.Text('Authorized Officer __________________'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  pw.TextStyle _headerTextStyle() =>
+      pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold);
 
   @override
   Widget build(BuildContext context) {
@@ -124,6 +371,12 @@ class PrintFireMoneyReceipt extends StatelessWidget {
   }
 
   /// Send Button
+  // ... (বাকি কোড অপরিবর্তিত)
+
+  /// Send Button
+  // ... (বাকি কোড অপরিবর্তিত)
+
+  /// Send Button
   Widget _buildSendButton(BuildContext context) {
     return ElevatedButton.icon(
       icon: const Icon(Icons.send),
@@ -132,69 +385,126 @@ class PrintFireMoneyReceipt extends StatelessWidget {
         final users = await AuthService().fetchAllUsers();
         String? selectedEmail;
 
-        showDialog(
+        // Modal Bottom Sheet ব্যবহার করে আপডেট করা হলো
+        showModalBottomSheet(
           context: context,
+          isScrollControlled: true,
+          // ড্রপডাউন মেনু যাতে কাটা না যায় তার জন্য `clipBehavior` যোগ করা হলো
+          clipBehavior: Clip.antiAlias,
           builder: (context) {
-            return AlertDialog(
-              title: const Text("Select User to Send Data"),
-              content: DropdownButtonFormField<String>(
-                hint: const Text("Select user email"),
-                items: users.map((u) {
-                  return DropdownMenuItem(
-                    value: u.email,
-                    child: Text(u.email ?? "unknown"),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  selectedEmail = value;
-                },
-              ),
-              actions: [
-                TextButton(
-                  child: const Text("Cancel"),
-                  onPressed: () => Navigator.pop(context),
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  top: 20, // উপরে কিছু প্যাডিং
+                  left: 20,
+                  right: 20,
                 ),
-                ElevatedButton(
-                  child: const Text("Send"),
-                  onPressed: () async {
-                    if (selectedEmail != null) {
-                      final dataToSend = {
-                        "recipientEmail": selectedEmail,
-                        "coverNoteNo": moneyreceipt.issuedAgainst ?? "N/A",
-                        "policyholder": moneyreceipt.fireBill?.firePolicy.policyholder ?? "N/A",
-                        "sumInsured": _sumInsured,
-                        "grossPremium": _grossPremium, // ✅ ফিক্সড ভ্যালু
-                        "monthlyPremium": _monthlyPayableAmount, // ✅ ফিক্সড ভ্যালু
-                        // "fireRate": moneyreceipt.fireBill?.fire ?? 0.0, // রেট নয়, অ্যামাউন্ট
-                        // "rsdRate": moneyreceipt.fireBill?.rsd ?? 0.0,
-                        // "taxRate": moneyreceipt.fireBill?.tax ?? 0.0,
-                        "issuedAt": DateTime.now().toIso8601String(),
-                      };
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      "Select User to Send Data 📧",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    // DropdownButtonFormField পরিবর্তন
+                    DropdownButtonFormField<String>(
+                      // **গুরুত্বপূর্ণ পরিবর্তন: isExpanded: true যোগ করা হয়েছে**
+                      // এটি নিশ্চিত করে যে ড্রপডাউন মেনুটি পুরো প্রস্থ জুড়ে বিস্তৃত হবে।
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: "User Email",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                      ),
+                      hint: const Text("Select user email"),
+                      items: users.map((u) {
+                        return DropdownMenuItem<String>(
+                          value: u.email,
+                          // ড্রপডাউন আইটেমের টেক্সটকে SizedBox দিয়ে মোড়ানো হয়েছে
+                          // যাতে এটি স্ক্রিনের বাইরে না যায়
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              u.email ?? "unknown",
+                              overflow: TextOverflow.ellipsis, // অতিরিক্ত টেক্সট... দিয়ে দেখানো হবে
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        selectedEmail = value;
+                      },
+                    ),
+                    const SizedBox(height: 30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          child: const Text("Cancel", style: TextStyle(fontSize: 16)),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded( // "Send" বাটনকে এক্সপান্ড করা হয়েছে যাতে পুরো প্রস্থ জুড়ে বাটনটি সুন্দর দেখায়
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurple,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            child: const Text("Send", style: TextStyle(fontSize: 16)),
+                            onPressed: () async {
+                              if (selectedEmail != null) {
+                                final dataToSend = {
+                                  "recipientEmail": selectedEmail,
+                                  "coverNoteNo": moneyreceipt.issuedAgainst ?? "N/A",
+                                  "policyholder": moneyreceipt.fireBill?.firePolicy.policyholder ?? "N/A",
+                                  "sumInsured": _sumInsured,
+                                  "grossPremium": _grossPremium,
+                                  "monthlyPremium": _monthlyPayableAmount,
+                                  "issuedAt": DateTime.now().toIso8601String(),
+                                };
 
-                      try {
-                        await HttpService().sendCoverNote(dataToSend);
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text("Data sent successfully to $selectedEmail ✅"),
-                              backgroundColor: Colors.green),
-                        );
-                      } catch (e) {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text("Failed to send data: ${e.toString()} ❌"),
-                              backgroundColor: Colors.red),
-                        );
-                      }
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please select a user email.")),
-                      );
-                    }
-                  },
+                                try {
+                                  await HttpService().sendCoverNote(dataToSend);
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text("Data sent successfully to $selectedEmail ✅"),
+                                        backgroundColor: Colors.green),
+                                  );
+                                } catch (e) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text("Failed to send data: ${e.toString()} ❌"),
+                                        backgroundColor: Colors.red),
+                                  );
+                                }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Please select a user email.")),
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                 ),
-              ],
+              ),
             );
           },
         );
@@ -207,6 +517,9 @@ class PrintFireMoneyReceipt extends StatelessWidget {
       ),
     );
   }
+
+// ... (বাকি কোড অপরিবর্তিত)
+
 
   // ------- Smart UI helper widgets ---------
   Widget _buildSmartCard(BuildContext context,

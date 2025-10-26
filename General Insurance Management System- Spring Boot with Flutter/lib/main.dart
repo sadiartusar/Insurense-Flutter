@@ -11,6 +11,7 @@ import 'package:general_insurance_management_system/firepolicy/view_firepolicy.d
 import 'package:general_insurance_management_system/page/admin_profile.dart';
 import 'package:general_insurance_management_system/page/all_user.dart';
 import 'package:general_insurance_management_system/page/company_account_details.dart';
+import 'package:general_insurance_management_system/page/deposit_to_user.dart';
 import 'package:general_insurance_management_system/page/home.dart';
 import 'package:general_insurance_management_system/page/login.dart';
 import 'package:general_insurance_management_system/page/registration.dart';
@@ -91,7 +92,8 @@ class _MyAppState extends State<MyApp> {
         '/viewcarmoneyreceipt': (context) => AllCarMoneyReceiptView(),
         '/paymentDetails': (context) => PaymentDetailsPage(),
         '/alluser': (context) => AllUsersPage(),
-        '/voltaccount':(context) => CompanyVoltDetailsPage()
+        '/voltaccount':(context) => CompanyVoltDetailsPage(),
+        '/depositeuser':(context) =>DepositScreen()
         // ✅ Keep your other routes as needed
       },
 

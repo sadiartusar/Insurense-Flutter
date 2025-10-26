@@ -96,7 +96,7 @@ class _AllCarMoneyReceiptViewState extends State<AllCarMoneyReceiptView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Fire Money Receipt',
+          'Car Money Receipt',
           style: TextStyle(
             fontSize: responsiveSize(context, 18),
             fontWeight: FontWeight.bold,

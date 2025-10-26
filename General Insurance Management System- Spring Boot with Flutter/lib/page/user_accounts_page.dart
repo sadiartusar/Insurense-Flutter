@@ -20,6 +20,13 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
   List<Payment> _payments = [];
   double? _balance;
   bool _loading = false;
+  // নতুন স্টেট: বর্তমানে কোন অ্যাকশনটি লোড হচ্ছে তা বোঝানোর জন্য
+  String? _currentAction;
+
+  // --- Theme/Style Constants ---
+  static const Color _primaryColor = Colors.deepPurple;
+  static const Color _secondaryColor = Colors.amber;
+  static const Color _backgroundColor = Color(0xFFF5F5F5);
 
   @override
   void dispose() {
@@ -31,13 +38,12 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
     super.dispose();
   }
 
+  // --- Payment Logic ---
   Future<void> _pay() async {
     if (_senderController.text.trim().isEmpty ||
         _receiverController.text.trim().isEmpty ||
         _amountController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all payment fields')),
-      );
+      _showSnackBar('Please fill all payment fields', isError: true);
       return;
     }
 
@@ -46,13 +52,14 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
     final amount = double.tryParse(_amountController.text);
 
     if (senderId == null || receiverId == null || amount == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid input: IDs must be numbers, amount must be numeric')),
-      );
+      _showSnackBar('Invalid input: IDs must be numbers, amount must be numeric', isError: true);
       return;
     }
 
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _currentAction = 'pay';
+    });
 
     bool success = await _service.payPremium(
       senderId: senderId,
@@ -60,107 +67,211 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
       amount: amount,
     );
 
-    setState(() => _loading = false);
+    setState(() {
+      _loading = false;
+      _currentAction = null;
+    });
 
+    if (success) {
+      _showSnackBar('✅ Payment successful');
+      _senderController.clear();
+      _receiverController.clear();
+      _amountController.clear();
+    } else {
+      _showSnackBar('❌ Payment failed. Check your balance or network.', isError: true);
+    }
+  }
+
+  // --- Helper Functions ---
+  void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(success ? '✅ Payment successful' : '❌ Payment failed')),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red.shade700 : Colors.green.shade700,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
-  Future<void> _getBalance() async {
-    if (_balanceIdController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter User ID to check balance')),
-      );
-      return;
-    }
-
-    final userId = int.tryParse(_balanceIdController.text);
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid User ID')),
-      );
-      return;
-    }
-
-    setState(() => _loading = true);
-    final bal = await _service.getBalance(userId);
-    setState(() {
-      _balance = bal;
-      _loading = false;
-    });
+  // --- Smart Input Field Widget ---
+  Widget _buildSmartTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: _primaryColor),
+          prefixIcon: Icon(icon, color: _primaryColor.withOpacity(0.7)),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: _primaryColor),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: _primaryColor, width: 1),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: _primaryColor, width: 2),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+        ),
+      ),
+    );
   }
 
-  Future<void> _loadPayments() async {
-    setState(() => _loading = true);
-    final payments = await _service.getAllPayments();
-    setState(() {
-      _payments = payments ?? [];
-      _loading = false;
-    });
-  }
-
+  // --- Main Widget Builder ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('DAO Operations')),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      backgroundColor: _backgroundColor,
+      appBar: AppBar(
+        title: const Text('User Account Operations'),
+        backgroundColor: _primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              '💳 Pay Premium',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            TextField(
-              controller: _senderController,
-              decoration: const InputDecoration(labelText: 'Sender ID'),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
-              controller: _receiverController,
-              decoration: const InputDecoration(labelText: 'Receiver ID'),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
-              controller: _amountController,
-              decoration: const InputDecoration(labelText: 'Amount'),
-              keyboardType:
-              const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(onPressed: _pay, child: const Text('Pay')),
+            // 1. Payment Card
+            _buildPaymentCard(),
 
-            const Divider(),
+            const SizedBox(height: 30),
 
-            const Text(
-              '📊 Check Balance',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            TextField(
-              controller: _balanceIdController,
-              decoration: const InputDecoration(labelText: 'User ID'),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(onPressed: _getBalance, child: const Text('Get Balance')),
-            if (_balance != null) Text('Balance: $_balance'),
-
-            const Divider(),
-
-            const Text(
-              '📜 All Payments',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            ElevatedButton(onPressed: _loadPayments, child: const Text('Load Payment History')),
-            ..._payments.map((p) => ListTile(
-              title: Text('Amount: ${p.amount} | Mode: ${p.paymentMode}'),
-              subtitle: Text('By: ${p.user.name} on ${p.paymentDate.toLocal()}'),
-            )),
           ],
         ),
+      ),
+    );
+  }
+
+  // --- Widget for Pay Premium Section ---
+  Widget _buildPaymentCard() {
+    final isPaying = _loading && _currentAction == 'pay';
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.payment, color: _primaryColor, size: 28),
+                const SizedBox(width: 10),
+                const Text(
+                  'Pay Premium',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: _primaryColor,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 25, thickness: 1.5),
+
+            // Sender ID
+            _buildSmartTextField(
+              controller: _senderController,
+              label: 'Sender Account ID (Your ID)',
+              icon: Icons.person_outline,
+              keyboardType: TextInputType.number,
+            ),
+            // Receiver ID
+            _buildSmartTextField(
+              controller: _receiverController,
+              label: 'Receiver Account ID (Company ID)',
+              icon: Icons.business,
+              keyboardType: TextInputType.number,
+            ),
+            // Amount
+            _buildSmartTextField(
+              controller: _amountController,
+              label: 'Amount (Premium)',
+              icon: Icons.attach_money,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 20),
+
+            // Pay Button
+            ElevatedButton(
+              onPressed: isPaying ? null : _pay,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _secondaryColor,
+                foregroundColor: _primaryColor,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                elevation: 4,
+              ),
+              child: isPaying
+                  ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  color: _primaryColor,
+                  strokeWidth: 3,
+                ),
+              )
+                  : const Text(
+                'Execute Payment',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- Action Placeholder Widget (for future functionality) ---
+  Widget _buildActionPlaceholder(String title, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _primaryColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: _primaryColor),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: _primaryColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+        ],
       ),
     );
   }

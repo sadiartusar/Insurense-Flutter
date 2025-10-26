@@ -118,22 +118,60 @@ class PaymentService {
   }
 
   /// ✅ Deposit into user account
-  Future<bool> deposit({required int id, required double amount}) async {
+  // Future<bool> deposit({required int id, required double amount}) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final token = prefs.getString('authToken');
+  //
+  //   final url = Uri.parse('$baseUrl/deposit/$id');
+  //
+  //   final response = await http.post(
+  //     url,
+  //     headers: {
+  //       'Authorization': 'Bearer $token',
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: jsonEncode({'amount': amount}),
+  //   );
+  //
+  //   return response.statusCode == 200;
+  // }
+
+  Future<String> depositMoney(int id, double amount) async {
+    // API endpoint: /deposit/{id}?amount={amount}
+    final url = Uri.parse('$baseUrl/deposit/$id?amount=$amount');
+
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('authToken');
 
-    final url = Uri.parse('$baseUrl/deposit/$id');
+    if (token == null) {
+      throw Exception('User is not authenticated.');
+    }
 
-    final response = await http.post(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'amount': amount}),
-    );
+    try {
+      final response = await http.post(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token', // JWT Token
+        },
 
-    return response.statusCode == 200;
+        body: json.encode({}),
+      );
+
+      if (response.statusCode == 200) {
+        // সফল ডিপোজিট হলে Spring থেকে "Deposit successful" স্ট্রিং আসবে
+        return response.body;
+      } else if (response.statusCode == 404) {
+        // যদি Account not found হয়
+        throw Exception('Account not found. Status: ${response.statusCode}');
+      } else {
+        // অন্যান্য ত্রুটি
+        throw Exception('Failed to deposit money. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      // নেটওয়ার্ক ত্রুটি বা অন্যান্য ব্যতিক্রম
+      throw Exception('An error occurred during deposit: $e');
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchCompanyVoltDetails() async {

@@ -103,12 +103,10 @@ class _HeadOfficeState extends State<HeadOffice> {
                   },
                 ),
                 ActionCard(
-                  title: 'Settings',
+                  title: 'Deposite to user',
                   icon: Icons.settings,
                   color: Colors.grey,
-                  onTap: () {
-                    // Implement navigation or functionality
-                  },
+                    onTap: () => Navigator.of(context).pushNamed('/depositeuser')
                 ),
               ],
             ),

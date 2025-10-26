@@ -59,6 +59,7 @@ class _HomePageState extends State<HomePage> {
     '/paymentDetails',
     '/alluser',
     '/voltaccount'
+    '/depositeuser'
   ];
 
   final List<Color> _cardColors = [

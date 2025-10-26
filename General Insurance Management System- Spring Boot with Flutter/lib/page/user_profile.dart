@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/page/accounts_details.dart';
 import 'package:general_insurance_management_system/page/data_store.dart';
 import 'package:general_insurance_management_system/page/login.dart';
-import 'package:general_insurance_management_system/page/money_receipt_for_user.dart';
+import 'package:general_insurance_management_system/page/money_receipt_for_user.dart'; // assuming this holds UserCoverNotesPage
 import 'package:general_insurance_management_system/page/user_accounts_page.dart';
 import 'package:general_insurance_management_system/service/auth_service.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +15,10 @@ class UserPage extends StatelessWidget {
   final AuthService _authService = AuthService();
 
   UserPage({super.key, required this.profile});
+
+  // --- Design Constants ---
+  static const Color _primaryColor = Color(0xFF1976D2); // Blue 700
+  static const Color _accentColor = Color(0xFFFF9800);  // Deep Orange for accent
 
   // Date Formatting Function
   String _formatDate(String? dateString) {
@@ -29,14 +33,14 @@ class UserPage extends StatelessWidget {
     }
   }
 
-  // Info Row Widget - Using Google Fonts
+  // Info Row Widget
   Widget _buildProfileInfoRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Icon(icon, color: Colors.indigo.shade700, size: 22),
+          Icon(icon, color: _primaryColor, size: 22),
           const SizedBox(width: 15),
           Expanded(
             child: Column(
@@ -67,20 +71,20 @@ class UserPage extends StatelessWidget {
     );
   }
 
-  // Helper Widget to create clear section headers - Using Google Fonts
+  // Section Header Widget
   Widget _buildSectionHeader(String title, IconData icon) {
     return Padding(
       padding: const EdgeInsets.only(top: 8.0, bottom: 12.0),
       child: Row(
         children: [
-          Icon(icon, color: Colors.blueAccent.shade700, size: 28),
+          Icon(icon, color: _primaryColor, size: 28),
           const SizedBox(width: 10),
           Text(
             title,
             style: GoogleFonts.archivoNarrow(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.blueAccent.shade700,
+              color: _primaryColor,
             ),
           ),
         ],
@@ -88,90 +92,123 @@ class UserPage extends StatelessWidget {
     );
   }
 
-  // Helper Widget for Animated Profile Card
-  Widget _buildProfileHeaderCard(
-      {required String name,
-        required String position,
-        required String status,
-        required Color statusColor,
-        required String userId,
-        required Widget profilePicture}) { // Accepts the animated picture
-
-    // Using OpenContainer for a neat reveal of the whole header
+  // Grid Action Button Widget
+  Widget _buildGridActionButton(BuildContext context,
+      {required String title,
+        required IconData icon,
+        required Color color,
+        required Widget page}) {
     return OpenContainer(
-      transitionDuration: const Duration(milliseconds: 600),
-      closedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      closedElevation: 8,
+      transitionDuration: const Duration(milliseconds: 500),
+      closedElevation: 3,
       closedColor: Colors.white,
-      closedBuilder: (context, action) => Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            profilePicture, // Animated Picture
-            const SizedBox(height: 20),
-            Text(
-              name,
-              style: GoogleFonts.montserrat(
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                color: Colors.black87,
+      closedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      closedBuilder: (context, action) => InkWell(
+        onTap: action, // OpenContainer action
+        borderRadius: BorderRadius.circular(15),
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 36),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.roboto(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade800,
+                ),
               ),
+            ],
+          ),
+        ),
+      ),
+      openBuilder: (context, action) => page,
+    );
+  }
+
+  // Profile Header Card with Gradient
+  Widget _buildProfileHeaderCard({
+    required String name,
+    required String position,
+    required String userId,
+    required Widget profilePicture}) {
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        // গ্ৰ্যাডিয়েন্ট ব্যাকগ্রাউন্ড
+        gradient: LinearGradient(
+          colors: [_primaryColor, _primaryColor],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 15,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(25.0),
+      child: Column(
+        children: [
+          profilePicture,
+          const SizedBox(height: 15),
+          Text(
+            name,
+            style: GoogleFonts.montserrat(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
             ),
-            const SizedBox(height: 6),
-            Text(
-              position,
-              style: GoogleFonts.raleway(
-                fontSize: 18,
-                color: Colors.deepOrange.shade600,
-                fontWeight: FontWeight.w700,
-              ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            position,
+            style: GoogleFonts.raleway(
+              fontSize: 18,
+              color: _accentColor,
+              fontWeight: FontWeight.w700,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'User ID: $userId',
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              'ID: $userId',
               style: GoogleFonts.roboto(
-                fontSize: 15,
-                color: Colors.grey[600],
+                fontSize: 14,
+                color: Colors.white,
                 fontStyle: FontStyle.italic,
               ),
             ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: statusColor, width: 1.5),
-              ),
-              child: Text(
-                'Status: $status',
-                style: GoogleFonts.roboto(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: statusColor,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      openBuilder: (context, action) => // Simple Modal for full detail view
-      Scaffold(
-        appBar: AppBar(title: Text('${name}\'s Details')),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                profilePicture,
-                const SizedBox(height: 20),
-                Text('Full Profile View for ${name}', style: GoogleFonts.poppins(fontSize: 24)),
-                // You can add more detailed info here if needed
-              ],
-            ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
+
+
+  // --- Logout Function ---
+  void _handleLogout(BuildContext context) async {
+    await _authService.logout();
+    // Transition effect for logout
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => LoginPage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeScaleTransition(animation: animation, child: child);
+        },
       ),
     );
   }
@@ -179,30 +216,27 @@ class UserPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+    // API endpoint is usually defined once
     const String baseUrl = "http://localhost:8085/images/users/";
     final String photoName = profile['photo'] ?? '';
     final String? photoUrl = (photoName.isNotEmpty) ? "$baseUrl$photoName" : null;
 
-    // Extracting data from profile map (UserModel JSON)
+    // Extracting data
     final String name = profile['name'] ?? 'N/A';
     final String email = profile['email'] ?? 'N/A';
     final String phone = profile['phone'] ?? 'N/A';
     final String role = profile['role']?.toString().toUpperCase() ?? 'USER';
     final int id = profile['id'] ?? 0;
 
-    // For simplicity, we can assume user is always active (optional)
-    const String status = 'ACTIVE';
-    final Color statusColor = status == 'ACTIVE' ? Colors.green.shade600 : Colors.red.shade600;
-
     // Profile picture widget
     final Widget profilePictureWidget = Container(
-      width: 120,
-      height: 120,
+      width: 100,
+      height: 100,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.blueAccent.shade700, width: 4),
+        border: Border.all(color: Colors.white, width: 4),
         boxShadow: const [
-          BoxShadow(color: Colors.black38, blurRadius: 15, offset: Offset(0, 8))
+          BoxShadow(color: Colors.black38, blurRadius: 15, offset: Offset(0, 5))
         ],
         color: Colors.white,
       ),
@@ -211,98 +245,64 @@ class UserPage extends StatelessWidget {
             ? Image.network(
           photoUrl,
           fit: BoxFit.cover,
-          width: 120,
-          height: 120,
+          width: 100,
+          height: 100,
           errorBuilder: (context, error, stackTrace) => Lottie.asset(
-            'assets/lottie/loading_animation.json',
-            width: 120,
-            height: 120,
+            // Fallback Lottie animation if image fails
+            'assets/lottie/user_placeholder.json',
+            width: 100,
+            height: 100,
             fit: BoxFit.cover,
           ),
         )
-            : const Icon(Icons.person_4, size: 60, color: Colors.blueGrey),
+            : const Icon(Icons.person_4, size: 50, color: Colors.blueGrey),
       ),
     );
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade200,
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         title: Text(
-          'User Profile',
+          'User Dashboard',
           style: GoogleFonts.poppins(
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.blueAccent.shade700,
+        backgroundColor: _primaryColor,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
 
-      // Simple Drawer
+      // Smart Drawer
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
             UserAccountsDrawerHeader(
-              accountName: Text(name),
-              accountEmail: Text(email),
+              accountName: Text(name, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              accountEmail: Text(email, style: GoogleFonts.roboto()),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
-                child: photoUrl != null
-                    ? ClipOval(
-                  child: Image.network(
-                    photoUrl,
-                    fit: BoxFit.cover,
-                    width: 90,
-                    height: 90,
-                    errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.person, size: 50, color: Colors.blueGrey),
-                  ),
-                )
-                    : const Icon(Icons.person, size: 50),
+                child: profilePictureWidget,
               ),
-              decoration: const BoxDecoration(
-                color: Colors.blueAccent,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [_primaryColor, _primaryColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.payment_outlined),
-              title: const Text('Payment'),
 
-              onTap: () => Navigator.push(context,MaterialPageRoute(builder: (context) => const UserAccountsPage()),),
-            ),
-            ListTile(
-              leading: const Icon(Icons.account_balance_wallet),
-              title: const Text('My Premium Amount'),
-              onTap: () {
-                Navigator.pop(context); // Close Drawer
+            // Drawer items simplified
+            _buildDrawerTile(context, Icons.account_balance_wallet, 'My Account', const AccountDetailsPage()),
+            _buildDrawerTile(context, Icons.receipt_long, 'My Cover Notes', const UserCoverNotesPage()),
+            _buildDrawerTile(context, Icons.currency_exchange, 'Make Payment', const UserAccountsPage()),
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const UserCoverNotesPage(),
-                  ),
-                );
-              },
-            ),
-
-
-
-            ListTile(
-              leading: const Icon(Icons.account_balance_wallet),
-              title: const Text('Account'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AccountDetailsPage(),
-                  ),
-                );
-              },
-            ),
 
             const Divider(),
+
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.redAccent),
               title: const Text(
@@ -313,13 +313,7 @@ class UserPage extends StatelessWidget {
                   fontSize: 16,
                 ),
               ),
-              onTap: () async {
-                await _authService.logout();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => LoginPage()),
-                );
-              },
+              onTap: () => _handleLogout(context),
             ),
           ],
         ),
@@ -331,21 +325,67 @@ class UserPage extends StatelessWidget {
           // Header card
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 10.0),
               child: _buildProfileHeaderCard(
                 name: name,
                 position: role,
-                status: status,
-                statusColor: statusColor,
                 userId: id.toString(),
                 profilePicture: profilePictureWidget,
               ),
             ),
           ),
 
-          // Info card
+          // Action Grid
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              child: _buildSectionHeader('Quick Actions', Icons.dashboard),
+            ),
+          ),
+
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            sliver: SliverGrid.count(
+              crossAxisCount: 2,
+              crossAxisSpacing: 15,
+              mainAxisSpacing: 15,
+              childAspectRatio: 1.2, // Adjusts height/width ratio
+              children: [
+                _buildGridActionButton(
+                  context,
+                  title: 'My Account',
+                  icon: Icons.account_balance_wallet_outlined,
+                  color: Colors.green.shade600,
+                  page: const AccountDetailsPage(),
+                ),
+                _buildGridActionButton(
+                  context,
+                  title: 'My Payable Amount',
+                  icon: Icons.receipt_long,
+                  color: Colors.orange.shade600,
+                  page: const UserCoverNotesPage(),
+                ),
+                _buildGridActionButton(
+                  context,
+                  title: 'Make Payment',
+                  icon: Icons.currency_exchange,
+                  color: Colors.indigo.shade600,
+                  page: const UserAccountsPage(),
+                ),
+              ],
+            ),
+          ),
+
+          // User Info Card
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+              child: _buildSectionHeader('Contact Information', Icons.info_outline),
+            ),
+          ),
+
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 Card(
@@ -357,8 +397,6 @@ class UserPage extends StatelessWidget {
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       children: [
-                        _buildSectionHeader('User Information', Icons.person),
-                        _buildProfileInfoRow(Icons.badge, 'User ID', id.toString()),
                         _buildProfileInfoRow(Icons.person, 'Full Name', name),
                         _buildProfileInfoRow(Icons.email, 'Email', email),
                         _buildProfileInfoRow(Icons.phone, 'Phone Number', phone),
@@ -367,6 +405,7 @@ class UserPage extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: 30), // Bottom space
               ]),
             ),
           ),
@@ -374,5 +413,19 @@ class UserPage extends StatelessWidget {
       ),
     );
   }
+}
 
+// Helper for Drawer Tiles
+Widget _buildDrawerTile(BuildContext context, IconData icon, String title, Widget page) {
+  return ListTile(
+    leading: Icon(icon, color: Colors.blueAccent.shade700),
+    title: Text(title, style: GoogleFonts.roboto(fontSize: 16)),
+    onTap: () {
+      Navigator.pop(context); // Close Drawer
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => page),
+      );
+    },
+  );
 }

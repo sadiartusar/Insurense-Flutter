@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/model/carmoneyreceipt_model.dart';
+import 'package:general_insurance_management_system/service/auth_service.dart';
+import 'package:general_insurance_management_system/service/http_service.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -391,8 +393,148 @@ class PrintCarMoneyReceipt extends StatelessWidget {
 
             // --- Action Buttons ---
             _buildActionButtons(context),
+            const SizedBox(height: 20),
+            _buildSendButton(context),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSendButton(BuildContext context) {
+    return ElevatedButton.icon(
+      icon: const Icon(Icons.send),
+      label: const Text('Send to User'),
+      onPressed: () async {
+        final users = await AuthService().fetchAllUsers();
+        String? selectedEmail;
+
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+
+          clipBehavior: Clip.antiAlias,
+          builder: (context) {
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  top: 20, // উপরে কিছু প্যাডিং
+                  left: 20,
+                  right: 20,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      "Select User to Send Data 📧",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    // DropdownButtonFormField পরিবর্তন
+                    DropdownButtonFormField<String>(
+
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: "User Email",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                      ),
+                      hint: const Text("Select user email"),
+                      items: users.map((u) {
+                        return DropdownMenuItem<String>(
+                          value: u.email,
+
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              u.email ?? "unknown",
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        selectedEmail = value;
+                      },
+                    ),
+                    const SizedBox(height: 30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          child: const Text("Cancel", style: TextStyle(fontSize: 16)),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurple,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            child: const Text("Send", style: TextStyle(fontSize: 16)),
+                            onPressed: () async {
+                              if (selectedEmail != null) {
+                                final dataToSend = {
+                                  "recipientEmail": selectedEmail,
+                                  "coverNoteNo": moneyreceipt.issuedAgainst ?? "N/A",
+                                  "policyholder": moneyreceipt.carBill?.carPolicy.policyholder ?? "N/A",
+                                  "sumInsured": _sumInsured,
+                                  "grossPremium": _grossPremium,
+                                  "monthlyPremium": _monthlyPayableAmount,
+                                  "issuedAt": DateTime.now().toIso8601String(),
+                                };
+
+                                try {
+                                  await HttpService().sendCoverNote(dataToSend);
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text("Data sent successfully to $selectedEmail ✅"),
+                                        backgroundColor: Colors.green),
+                                  );
+                                } catch (e) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text("Failed to send data: ${e.toString()} ❌"),
+                                        backgroundColor: Colors.red),
+                                  );
+                                }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Please select a user email.")),
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.orange,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -475,36 +617,55 @@ class PrintCarMoneyReceipt extends StatelessWidget {
     );
   }
 
+  // --- Helper Widget for Calculation Row (OverFlow Fix) ---
   Widget _buildCalculationRow(
       BuildContext context, String title, String rate, double amount,
       {bool isNet = false}) {
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
           Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                    fontSize: _defaultFontSize,
-                    fontWeight: isNet ? FontWeight.bold : FontWeight.w500,
-                    color: isNet ? Colors.deepPurple : Colors.black87),
-              )),
-          Text(rate,
+            flex: 3,
+            child: Text(
+              title,
               style: TextStyle(
                   fontSize: _defaultFontSize,
                   fontWeight: isNet ? FontWeight.bold : FontWeight.w500,
-                  color: isNet ? Colors.deepPurple : Colors.black87)),
-          const SizedBox(width: 15),
+                  color: isNet ? Colors.deepPurple : Colors.black87),
+            ),
+          ),
+
+
+          Expanded(
+            flex: 2,
+            child: Text(
+              rate,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                  fontSize: _defaultFontSize,
+                  fontWeight: isNet ? FontWeight.bold : FontWeight.w500,
+                  color: isNet ? Colors.deepPurple : Colors.black87),
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+
           SizedBox(
             width: 80,
-            child: Text('${amount.toStringAsFixed(2)} TK',
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                    fontSize: _defaultFontSize,
-                    fontWeight: isNet ? FontWeight.bold : FontWeight.w500,
-                    color: isNet ? Colors.deepPurple : Colors.black87)),
+            child: Text(
+              '${amount.toStringAsFixed(2)} TK',
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                  fontSize: _defaultFontSize,
+                  fontWeight: isNet ? FontWeight.w900 : FontWeight.w500,
+                  color: isNet ? Colors.deepPurple.shade900 : Colors.black),
+            ),
           )
         ],
       ),
@@ -513,7 +674,7 @@ class PrintCarMoneyReceipt extends StatelessWidget {
 
   Widget _buildTotalSummaryCard(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
         color: Colors.deepPurple.shade50,
         borderRadius: BorderRadius.circular(15),
@@ -596,9 +757,13 @@ class PrintCarMoneyReceipt extends StatelessWidget {
             icon: const Icon(Icons.print),
             label: const Text('Print View'),
             onPressed: () async {
-              await Printing.layoutPdf(
-                onLayout: (format) async => (await _generatePdf(context)).save(),
-              );
+              try {
+                await Printing.layoutPdf(
+                  onLayout: (format) async => (await _generatePdf(context)).save(),
+                );
+              } catch (e) {
+                // error handling
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.purple.shade700,
@@ -609,7 +774,9 @@ class PrintCarMoneyReceipt extends StatelessWidget {
             ),
           ),
         ),
+
       ],
     );
   }
+
 }
