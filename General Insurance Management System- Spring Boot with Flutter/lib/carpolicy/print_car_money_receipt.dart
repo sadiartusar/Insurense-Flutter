@@ -131,13 +131,13 @@ class PrintCarMoneyReceipt extends StatelessWidget {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.center,
       children: [
-        pw.Text("Fire Cover Note", style: _headerTextStyle()),
+        pw.Text("Car Cover Note", style: _headerTextStyle()),
         pw.SizedBox(height: 10),
         pw.Table.fromTextArray(
           data: [
             [
-              'Fire Cover Note No', moneyreceipt.issuedAgainst ?? "N/A",
-              'Fire Bill No', moneyreceipt.carBill?.carPolicy.id?.toString() ?? "N/A",
+              'Car Cover Note No', moneyreceipt.issuedAgainst ?? "N/A",
+              'Car Bill No', moneyreceipt.carBill?.carPolicy.id?.toString() ?? "N/A",
               'Date', _formatDate(moneyreceipt.carBill?.carPolicy.date),
             ],
           ],
@@ -169,7 +169,7 @@ class PrintCarMoneyReceipt extends StatelessWidget {
     return pw.Table.fromTextArray(
       data: [
         [
-          'Having this day proposed to effect an insurance against Fire and/or Lightning for 12 (Twelve) months from ${_formatDate(policy?.periodFrom)} to ${_formatDate(policy?.periodTo)} on the usual terms and conditions of the company’s Fire Policy. Having paid the undernoted premium in cash/cheque/P.O/D.D./C.A, the following property is hereby insured to the extent of ($sumInsuredInWords) Only in the manner specified below:'
+          'Having this day proposed to effect an insurance against Engine Damage for 12 (Twelve) months from ${_formatDate(policy?.periodFrom)} to ${_formatDate(policy?.periodTo)} on the usual terms and conditions of the company’s Fire Policy. Having paid the undernoted premium in cash/cheque/P.O/D.D./C.A, the following property is hereby insured to the extent of ($sumInsuredInWords) Only in the manner specified below:'
         ],
       ],
     );

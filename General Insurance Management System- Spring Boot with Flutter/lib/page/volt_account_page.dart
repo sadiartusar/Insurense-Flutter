@@ -18,11 +18,12 @@ class PaymentDetailsPage extends StatefulWidget {
   _PaymentDetailsPageState createState() => _PaymentDetailsPageState();
 }
 
+// ... অন্যান্য সব import অপরিবর্তিত থাকবে ...
+
 class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
-  // সমস্ত পেমেন্ট ডেটা সংরক্ষণের জন্য
   List<Payment> allPayments = [];
-  // বর্তমানে UI-তে প্রদর্শিত পেমেন্ট ডেটা (ফিল্টার করার পর)
   List<Payment> filteredPayments = [];
+  List<User> userList=[];
   bool isLoading = true;
 
   // সার্চ ফিল্ডের জন্য কন্ট্রোলার
@@ -34,7 +35,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
   void initState() {
     super.initState();
     fetchPayments();
-    // কন্ট্রোলারের পরিবর্তনগুলো শুনবে এবং ফিল্টার ফাংশন কল করবে
+
     _searchController.addListener(_filterPayments);
   }
 
@@ -46,11 +47,11 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
   }
 
   Future<void> fetchPayments() async {
+    // ... (আপনার fetchPayments মেথড অপরিবর্তিত থাকবে)
     try {
       final fetchedPayments = await paymentService.getAllPayments();
       setState(() {
         allPayments = fetchedPayments ?? [];
-        // শুরুতে ফিল্টার্ড লিস্ট সমস্ত ডেটা দিয়ে পপুলেট হবে
         filteredPayments = allPayments;
         isLoading = false;
       });
@@ -62,26 +63,43 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
     }
   }
 
-  // 🔎 ফিল্টারিং লজিক
+  // ⭐️⭐️⭐️ মূল পরিবর্তন এখানে: _filterPayments() ⭐️⭐️⭐️
   void _filterPayments() {
-    final query = _searchController.text.toLowerCase();
+    final query = _searchController.text.trim().toLowerCase();
+
+    // ⭐️ নতুন পরিবর্তন: কমা (,) দ্বারা বিভক্ত আইডিগুলোর একটি তালিকা তৈরি করা ⭐️
+    final List<int> queryIds = query.split(',')
+        .map((s) => int.tryParse(s.trim())) // প্রতিটি অংশকে int-এ পার্স করার চেষ্টা
+        .where((id) => id != null)        // যেগুলো সফলভাবে পার্স হয়েছে, শুধু সেগুলোকে রাখা
+        .cast<int>()                      // নিশ্চিত করা যে তালিকাটি শুধুমাত্র int রাখবে
+        .toList();
+
     setState(() {
       if (query.isEmpty) {
-        // সার্চ খালি থাকলে সমস্ত পেমেন্ট দেখাবে
         filteredPayments = allPayments;
       } else {
-        // ইমেইল দিয়ে ফিল্টার করবে
         filteredPayments = allPayments.where((payment) {
-          // Null check যোগ করা হয়েছে
-          final email = payment.user.email?.toLowerCase() ?? '';
-          return email.contains(query);
+          // ১. ইমেইল দিয়ে ম্যাচ করার চেষ্টা
+          final emailMatch = payment.user.email?.toLowerCase().contains(query) ?? false;
+
+          // ২. ইউজার আইডি দিয়ে ম্যাচ করার চেষ্টা (যদি queryIds লিস্টে থাকে)
+          // queryIds.contains(payment.user.id) চেক করবে, ইউজার আইডিটি ইনপুট করা আইডিগুলোর মধ্যে আছে কি না
+          final userIdMatch = queryIds.contains(payment.user.id);
+
+          // ৩. পেমেন্ট আইডি দিয়ে ম্যাচ করার চেষ্টা (যদি queryIds লিস্টে থাকে)
+          final paymentIdMatch = queryIds.contains(payment.id);
+
+          // ইমেইল OR ইউজার আইডি OR পেমেন্ট আইডি যেকোনো একটি ম্যাচ করলেই যথেষ্ট
+          return emailMatch || userIdMatch || paymentIdMatch;
         }).toList();
       }
     });
   }
+  // ⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️
 
-  // 🔹 Build PDF document (এখন filteredPayments ব্যবহার করবে)
+  // 🔹 Build PDF document (এখানে কোনো পরিবর্তন দরকার নেই, কারণ এটি filteredPayments ব্যবহার করে)
   Future<pw.Document> _buildPdfDocument() async {
+    // ... (মেথডটি অপরিবর্তিত থাকবে)
     final pdf = pw.Document();
 
     pdf.addPage(
@@ -94,29 +112,29 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
               style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
             ),
           ),
-          // যদি কোনো ফিল্টার প্রয়োগ করা হয়, সেটি PDF এ দেখানো
+
           if (_searchController.text.isNotEmpty)
             pw.Padding(
               padding: const pw.EdgeInsets.only(top: 10, bottom: 10),
               child: pw.Text(
-                "Filter Applied (User Email): ${_searchController.text}",
+                "Filter Applied (Email/ID): ${_searchController.text}", // টেক্সট পরিবর্তন
                 style: const pw.TextStyle(fontSize: 16, color: PdfColors.blueGrey),
               ),
             ),
 
           pw.SizedBox(height: 20),
           pw.Table.fromTextArray(
-            // ✅ এখন filteredPayments ব্যবহার করা হচ্ছে
+
             data: filteredPayments.map((p) {
               return [
                 p.id.toString(),
-                p.user.email ?? 'N/A', // Null safety
+                p.user.email ?? 'N/A', // Null safety যোগ করা
                 p.amount.toString(),
                 p.paymentDate.toLocal().toString().split(' ')[0],
                 p.paymentMode,
               ];
             }).toList(),
-            // ... (বাকি স্টাইল অপরিবর্তিত)
+
             headers: ["ID", "User Email", "Amount", "Payment Date", "Payment Mode"],
             headerStyle: pw.TextStyle(
                 fontWeight: pw.FontWeight.bold, color: PdfColors.white),
@@ -131,20 +149,19 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
     return pdf;
   }
 
-  // 🔹 PDF preview (for print or viewing)
+  // ... (generateAndPreviewPdf এবং downloadPdf মেথড অপরিবর্তিত থাকবে)
   Future<void> generateAndPreviewPdf() async {
     final pdf = await _buildPdfDocument();
     await Printing.layoutPdf(onLayout: (format) async => pdf.save());
   }
 
-  // 🔹 Cross-platform PDF download (works on Web + Mobile)
   Future<void> downloadPdf() async {
     try {
       final pdf = await _buildPdfDocument();
       final bytes = await pdf.save();
 
       final fileName = _searchController.text.isNotEmpty
-          ? "Payment_Report_${_searchController.text}.pdf"
+          ? "Payment_Report_Filter.pdf" // নাম একটু ছোট করে দিলাম
           : "Payment_Details_Report.pdf";
 
       if (kIsWeb) {
@@ -189,10 +206,9 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
-    // ⚠️ এই লাইনটি আর প্রয়োজন নেই, কারণ আমরা LayoutBuilder ব্যবহার করছি
-    // final isWideScreen = MediaQuery.of(context).size.width > 600;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
@@ -203,13 +219,13 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
           IconButton(
             icon: const Icon(Icons.picture_as_pdf),
             tooltip: 'Preview PDF',
-            // ✅ filteredPayments.isEmpty দিয়ে চেক করা হয়েছে
+
             onPressed: filteredPayments.isEmpty ? null : generateAndPreviewPdf,
           ),
           IconButton(
             icon: const Icon(Icons.download),
             tooltip: 'Download PDF',
-            // ✅ filteredPayments.isEmpty দিয়ে চেক করা হয়েছে
+
             onPressed: filteredPayments.isEmpty ? null : downloadPdf,
           ),
         ],
@@ -241,19 +257,20 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      // 🔎 সার্চ ফিল্ড যোগ করা হলো
+
+                      // ⭐️⭐️⭐️ মূল পরিবর্তন এখানে: TextFormField ⭐️⭐️⭐️
                       TextFormField(
                         controller: _searchController,
                         decoration: InputDecoration(
-                          labelText: "Search by User Email",
-                          hintText: "Enter user email to filter payments",
+                          labelText: "Search by User Email or Account ID", // লেবেল পরিবর্তন
+                          hintText: "Enter email or ID to filter payments",
                           prefixIcon: const Icon(Icons.search, color: Colors.teal),
                           suffixIcon: _searchController.text.isNotEmpty
                               ? IconButton(
                             icon: const Icon(Icons.clear, color: Colors.red),
                             onPressed: () {
                               _searchController.clear();
-                              // _filterPayments() স্বয়ংক্রিয়ভাবে কল হবে
+
                             },
                           )
                               : null,
@@ -266,10 +283,10 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                             borderSide: const BorderSide(color: Colors.teal, width: 2),
                           ),
                         ),
-                        keyboardType: TextInputType.emailAddress,
+                        // keyboardType: TextInputType.emailAddress, // কিবোর্ড টাইপ removed, কারণ সংখ্যা ও অক্ষর দুটোই আসতে পারে
                       ),
                       const SizedBox(height: 16),
-                      // যদি ফিল্টারিং এর পরে কোনো ডেটা না থাকে
+
                       if (filteredPayments.isEmpty)
                         const Expanded(
                           child: Center(
@@ -279,7 +296,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                             ),
                           ),
                         )
-                      else // যদি ডেটা থাকে
+                      else
                         Expanded(
                           child: SingleChildScrollView(
                             scrollDirection: Axis.vertical,
@@ -294,12 +311,12 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                                     color: Colors.teal.shade200),
                                 columns: const [
                                   DataColumn(label: Text('ID')),
-                                  DataColumn(label: Text('User Email')), // Header আপডেট করা হলো
+                                  DataColumn(label: Text('User Email')),
                                   DataColumn(label: Text('Amount')),
                                   DataColumn(label: Text('Payment Date')),
                                   DataColumn(label: Text('Payment Mode')),
                                 ],
-                                // ✅ এখন filteredPayments ব্যবহার করা হচ্ছে
+
                                 rows: filteredPayments.map((p) {
                                   return DataRow(cells: [
                                     DataCell(Text(p.id.toString())),
@@ -318,7 +335,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                         ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
-                        // ✅ filteredPayments.isEmpty দিয়ে চেক করা হয়েছে
+
                         onPressed: filteredPayments.isEmpty ? null : downloadPdf,
                         icon: const Icon(Icons.download),
                         label: Text("Download PDF${_searchController.text.isNotEmpty ? ' (Filtered)' : ''}"),
