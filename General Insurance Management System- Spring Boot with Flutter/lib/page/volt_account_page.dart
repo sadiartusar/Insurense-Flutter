@@ -63,15 +63,15 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
     }
   }
 
-  // ⭐️⭐️⭐️ মূল পরিবর্তন এখানে: _filterPayments() ⭐️⭐️⭐️
+
   void _filterPayments() {
     final query = _searchController.text.trim().toLowerCase();
 
-    // ⭐️ নতুন পরিবর্তন: কমা (,) দ্বারা বিভক্ত আইডিগুলোর একটি তালিকা তৈরি করা ⭐️
+
     final List<int> queryIds = query.split(',')
-        .map((s) => int.tryParse(s.trim())) // প্রতিটি অংশকে int-এ পার্স করার চেষ্টা
-        .where((id) => id != null)        // যেগুলো সফলভাবে পার্স হয়েছে, শুধু সেগুলোকে রাখা
-        .cast<int>()                      // নিশ্চিত করা যে তালিকাটি শুধুমাত্র int রাখবে
+        .map((s) => int.tryParse(s.trim()))
+        .where((id) => id != null)
+        .cast<int>()
         .toList();
 
     setState(() {
@@ -79,27 +79,21 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
         filteredPayments = allPayments;
       } else {
         filteredPayments = allPayments.where((payment) {
-          // ১. ইমেইল দিয়ে ম্যাচ করার চেষ্টা
+
           final emailMatch = payment.user.email?.toLowerCase().contains(query) ?? false;
 
-          // ২. ইউজার আইডি দিয়ে ম্যাচ করার চেষ্টা (যদি queryIds লিস্টে থাকে)
-          // queryIds.contains(payment.user.id) চেক করবে, ইউজার আইডিটি ইনপুট করা আইডিগুলোর মধ্যে আছে কি না
-          final userIdMatch = queryIds.contains(payment.user.id);
+          // final userIdMatch = queryIds.contains(payment.user.id);
 
-          // ৩. পেমেন্ট আইডি দিয়ে ম্যাচ করার চেষ্টা (যদি queryIds লিস্টে থাকে)
-          final paymentIdMatch = queryIds.contains(payment.id);
-
-          // ইমেইল OR ইউজার আইডি OR পেমেন্ট আইডি যেকোনো একটি ম্যাচ করলেই যথেষ্ট
-          return emailMatch || userIdMatch || paymentIdMatch;
+          return emailMatch;
         }).toList();
       }
     });
   }
-  // ⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️
 
-  // 🔹 Build PDF document (এখানে কোনো পরিবর্তন দরকার নেই, কারণ এটি filteredPayments ব্যবহার করে)
+
+
   Future<pw.Document> _buildPdfDocument() async {
-    // ... (মেথডটি অপরিবর্তিত থাকবে)
+
     final pdf = pw.Document();
 
     pdf.addPage(
@@ -117,7 +111,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
             pw.Padding(
               padding: const pw.EdgeInsets.only(top: 10, bottom: 10),
               child: pw.Text(
-                "Filter Applied (Email/ID): ${_searchController.text}", // টেক্সট পরিবর্তন
+                "Filter Applied (Email): ${_searchController.text}", // টেক্সট পরিবর্তন
                 style: const pw.TextStyle(fontSize: 16, color: PdfColors.blueGrey),
               ),
             ),
@@ -149,7 +143,6 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
     return pdf;
   }
 
-  // ... (generateAndPreviewPdf এবং downloadPdf মেথড অপরিবর্তিত থাকবে)
   Future<void> generateAndPreviewPdf() async {
     final pdf = await _buildPdfDocument();
     await Printing.layoutPdf(onLayout: (format) async => pdf.save());
@@ -161,7 +154,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
       final bytes = await pdf.save();
 
       final fileName = _searchController.text.isNotEmpty
-          ? "Payment_Report_Filter.pdf" // নাম একটু ছোট করে দিলাম
+          ? "Payment_Report_Filter.pdf"
           : "Payment_Details_Report.pdf";
 
       if (kIsWeb) {
@@ -262,8 +255,8 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                       TextFormField(
                         controller: _searchController,
                         decoration: InputDecoration(
-                          labelText: "Search by User Email or Account ID", // লেবেল পরিবর্তন
-                          hintText: "Enter email or ID to filter payments",
+                          labelText: "Search by User Email", // লেবেল পরিবর্তন
+                          hintText: "Enter email to filter payments",
                           prefixIcon: const Icon(Icons.search, color: Colors.teal),
                           suffixIcon: _searchController.text.isNotEmpty
                               ? IconButton(
