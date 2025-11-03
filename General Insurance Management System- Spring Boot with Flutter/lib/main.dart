@@ -16,6 +16,9 @@ import 'package:general_insurance_management_system/page/home.dart';
 import 'package:general_insurance_management_system/page/login.dart';
 import 'package:general_insurance_management_system/page/registration.dart';
 import 'package:general_insurance_management_system/page/volt_account_page.dart';
+import 'package:general_insurance_management_system/reports/car_bill_report.dart';
+import 'package:general_insurance_management_system/reports/car_money_receipt.dart';
+import 'package:general_insurance_management_system/reports/car_policy_report.dart';
 import 'package:general_insurance_management_system/reports/fire_bill_reports.dart';
 import 'package:general_insurance_management_system/reports/fire_money_receipt_report.dart';
 import 'package:general_insurance_management_system/reports/fire_policy_reports.dart';
@@ -76,7 +79,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
 
-      // ✅ Fixed routes (no arguments)
+
       routes: {
         '/home': (context) => HomePage(),
         '/login': (context) => LoginPage(),
@@ -93,11 +96,14 @@ class _MyAppState extends State<MyApp> {
         '/paymentDetails': (context) => PaymentDetailsPage(),
         '/alluser': (context) => AllUsersPage(),
         '/voltaccount':(context) => CompanyVoltDetailsPage(),
-        '/depositeuser':(context) =>DepositScreen()
-        // ✅ Keep your other routes as needed
+        '/depositeuser':(context) =>DepositScreen(),
+        '/viewcarreport':(context) =>CarPolicyReportPage(),
+        '/viewcarbillreports':(context) =>CarBillReportPage(),
+        '/viewcarmoneyreceiptreports':(context) =>CarMoneyReceiptReportPage()
+
       },
 
-      // ✅ Dynamic route handler for routes with arguments
+
       onGenerateRoute: (settings) {
         if (settings.name == '/adminProfile') {
           final args = settings.arguments as Map<String, dynamic>;
@@ -123,7 +129,6 @@ class _MyAppState extends State<MyApp> {
         );
       },
 
-      // ✅ Entry point
       home: LoginPage(),
     );
   }

@@ -10,7 +10,7 @@ class AllCarBillDetails extends StatelessWidget {
 
   const AllCarBillDetails({super.key, required this.bill});
 
-  // 💡 রেসপন্সিভ সাইজিং এর জন্য হেল্পার ফাংশন (অপরিবর্তিত)
+
   double _rSize(BuildContext context, double baseSize) {
     double screenWidth = MediaQuery.of(context).size.width;
     double scale = (screenWidth / 400).clamp(0.8, 1.3);
@@ -20,7 +20,7 @@ class AllCarBillDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // AppBar আগের মতোই সুন্দর রাখা হয়েছে
+
       appBar: AppBar(
         title: Center(
             child: Text(
@@ -38,26 +38,26 @@ class AllCarBillDetails extends StatelessWidget {
           ),
         ),
       ),
-      // কার্ডগুলোকে ফুটিয়ে তোলার জন্য একটি হালকা ব্যাকগ্রাউন্ড রঙ
+
       backgroundColor: Colors.grey[100],
       body: SingleChildScrollView(
         padding: EdgeInsets.all(_rSize(context, 16)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // --- কার্ড ১: বিল এবং পলিসিহোল্ডারের তথ্য ---
+
             _buildInfoCard(context),
             SizedBox(height: _rSize(context, 16)),
 
-            // --- কার্ড ২: ইনসিওরেন্সের কভারেজ এবং পরিস্থিতি ---
+
             _buildCoverageCard(context),
             SizedBox(height: _rSize(context, 16)),
 
-            // --- কার্ড ৩: প্রিমিয়াম এবং ট্যাক্সের হিসাব ---
+
             _buildPremiumCard(context),
             SizedBox(height: _rSize(context, 24)),
 
-            // --- বাটন সেকশন ---
+
             _buildActionButtons(context),
           ],
         ),
@@ -65,7 +65,7 @@ class AllCarBillDetails extends StatelessWidget {
     );
   }
 
-  /// কার্ড ১: বিল এবং পলিসিহোল্ডারের সাধারণ তথ্য
+
   Widget _buildInfoCard(BuildContext context) {
     return Card(
       elevation: 4,
@@ -92,7 +92,7 @@ class AllCarBillDetails extends StatelessWidget {
     );
   }
 
-  /// কার্ড ২: কভারেজ এবং অন্যান্য বিবরণ
+
   Widget _buildCoverageCard(BuildContext context) {
     return Card(
       elevation: 4,
@@ -121,7 +121,7 @@ class AllCarBillDetails extends StatelessWidget {
     );
   }
 
-  /// কার্ড ৩: প্রিমিয়ামের বিস্তারিত হিসাব
+
   Widget _buildPremiumCard(BuildContext context) {
     return Card(
       elevation: 4,
@@ -161,7 +161,7 @@ class AllCarBillDetails extends StatelessWidget {
     );
   }
 
-  /// ডাউনলোড ও প্রিন্ট বাটন
+
   Widget _buildActionButtons(BuildContext context) {
     return Column(
       children: [
@@ -208,7 +208,6 @@ class AllCarBillDetails extends StatelessWidget {
 
   // --- Helper Widgets for UI ---
 
-  /// কার্ডের শিরোনাম তৈরির জন্য একটি হেল্পার
   Widget _buildCardTitle(
       BuildContext context, IconData icon, String title) {
     return Row(
@@ -227,7 +226,7 @@ class AllCarBillDetails extends StatelessWidget {
     );
   }
 
-  /// তথ্যের প্রতিটি সারি তৈরির জন্য নতুন এবং উন্নত হেল্পার
+
   Widget _buildDetailRow(BuildContext context, String title, String value) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: _rSize(context, 7)),
@@ -257,7 +256,7 @@ class AllCarBillDetails extends StatelessWidget {
     );
   }
 
-  /// প্রিমিয়াম কার্ডের সারি তৈরির জন্য বিশেষ হেল্পার
+
   Widget _buildPremiumRow(BuildContext context, String title, String amount,
       {bool isBold = false, bool isTotal = false}) {
     return Padding(
@@ -286,10 +285,10 @@ class AllCarBillDetails extends StatelessWidget {
     );
   }
 
-  // --- UNCHANGED LOGIC AND PDF GENERATION ---
+
 
   Future<pw.Document> _generatePdf(BuildContext context) async {
-    // এই ফাংশনে কোনো পরিবর্তন করা হয়নি
+
     final pdf = pw.Document();
     pdf.addPage(
       pw.Page(
@@ -316,9 +315,6 @@ class AllCarBillDetails extends StatelessWidget {
     return pdf;
   }
 
-  // All other helper methods (_buildHeader, _buildFireBillInfo, etc.)
-  // and calculation functions (getTotalFire, getTotalTax, etc.) remain unchanged.
-  // ... (Paste all your unchanged functions here)
   pw.Widget _buildHeader() {
     return pw.Center(
       child: pw.Column(

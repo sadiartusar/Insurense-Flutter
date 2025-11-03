@@ -370,11 +370,7 @@ class PrintFireMoneyReceipt extends StatelessWidget {
     );
   }
 
-  /// Send Button
-  // ... (বাকি কোড অপরিবর্তিত)
 
-  /// Send Button
-  // ... (বাকি কোড অপরিবর্তিত)
 
   /// Send Button
   Widget _buildSendButton(BuildContext context) {
@@ -518,7 +514,7 @@ class PrintFireMoneyReceipt extends StatelessWidget {
     );
   }
 
-// ... (বাকি কোড অপরিবর্তিত)
+
 
 
   // ------- Smart UI helper widgets ---------
@@ -609,11 +605,11 @@ class PrintFireMoneyReceipt extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // ✅ FIX: _grossPremium ব্যবহার করা হয়েছে
+
           _buildTotalRow(context, 'GROSS PREMIUM (with Tax)',
               _grossPremium, isFinal: true),
           const Divider(height: 20, thickness: 1.5, color: Colors.deepPurple),
-          // ✅ FIX: _monthlyPayableAmount ব্যবহার করা হয়েছে
+
           _buildTotalRow(
               context, 'MONTHLY PAYABLE AMOUNT', _monthlyPayableAmount,
               isMonthly: true),
@@ -637,7 +633,7 @@ class PrintFireMoneyReceipt extends StatelessWidget {
                       : (isMonthly ? Colors.green.shade700 : Colors.black87))),
         ),
         const SizedBox(width: 8),
-        // ✅ ফিক্সড কারেন্সি ফরমেটিং ব্যবহার করা হয়েছে
+
         Text(_formatCurrency(amount),
             style: TextStyle(
                 fontSize: 18,

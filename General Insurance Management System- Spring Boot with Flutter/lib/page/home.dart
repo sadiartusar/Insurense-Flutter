@@ -54,12 +54,13 @@ class _HomePageState extends State<HomePage> {
     '/viewfirereports',
     '/viewfiremoneyreceiptreports',
     '/viewcarreport',
-    '/viewcarreports',
+    '/viewcarbillreports',
     '/viewcarmoneyreceiptreports',
     '/paymentDetails',
     '/alluser',
     '/voltaccount'
     '/depositeuser'
+
   ];
 
   final List<Color> _cardColors = [

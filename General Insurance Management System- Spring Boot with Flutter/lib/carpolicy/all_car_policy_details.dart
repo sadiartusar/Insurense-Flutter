@@ -8,7 +8,7 @@ class AllCarPolicyDetails extends StatelessWidget {
 
   const AllCarPolicyDetails({super.key, required this.policy});
 
-  // Define a constant for the font size
+
   static const double _fontSize = 14;
 
   @override
@@ -32,8 +32,8 @@ class AllCarPolicyDetails extends StatelessWidget {
           child: AppBar(
             title: const Text('Car Policy Details'),
             centerTitle: true,
-            backgroundColor: Colors.transparent, // Make the AppBar transparent
-            elevation: 0, // Remove shadow
+            backgroundColor: Colors.transparent,
+            elevation: 0,
           ),
         ),
       ),
@@ -51,7 +51,7 @@ class AllCarPolicyDetails extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView( // Add SingleChildScrollView here
+          child: SingleChildScrollView(
             child: Card(
               elevation: 5,
               shape: RoundedRectangleBorder(
@@ -154,8 +154,8 @@ class AllCarPolicyDetails extends StatelessWidget {
 
   String formatDate(DateTime? dateTime) {
     if (dateTime == null) {
-      return "N/A"; // Return "N/A" if date is null
+      return "N/A";
     }
-    return DateFormat('dd-MM-yyyy').format(dateTime); // Format the date
+    return DateFormat('dd-MM-yyyy').format(dateTime);
   }
 }
