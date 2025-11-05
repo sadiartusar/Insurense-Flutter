@@ -186,7 +186,7 @@ class _UpdateFirePolicyState extends State<UpdateFirePolicy> {
                     Icons.location_city, 'Please enter the location'),
                 SizedBox(height: 20),
                 DropdownButtonFormField<String>(
-                  value: selectedConstruction,
+                  initialValue: selectedConstruction,
                   decoration:
                   _buildInputDecoration('Construction Type', Icons.build),
                   items: constructionTypes.map((type) {
@@ -204,7 +204,7 @@ class _UpdateFirePolicyState extends State<UpdateFirePolicy> {
                 ),
                 SizedBox(height: 20),
                 DropdownButtonFormField<String>(
-                  value: selectedusedAs,
+                  initialValue: selectedusedAs,
                   decoration: _buildInputDecoration('Used As', Icons.business),
                   items: usageTypes.map((type) {
                     return DropdownMenuItem<String>(

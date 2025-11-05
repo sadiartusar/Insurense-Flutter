@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/model/payment_model.dart';
@@ -14,6 +12,8 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:html' as html;
 
 class PaymentDetailsPage extends StatefulWidget {
+  const PaymentDetailsPage({super.key});
+
   @override
   _PaymentDetailsPageState createState() => _PaymentDetailsPageState();
 }
@@ -80,7 +80,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
       } else {
         filteredPayments = allPayments.where((payment) {
 
-          final emailMatch = payment.user.email?.toLowerCase().contains(query) ?? false;
+          final emailMatch = payment.user.email.toLowerCase().contains(query) ?? false;
 
           // final userIdMatch = queryIds.contains(payment.user.id);
 

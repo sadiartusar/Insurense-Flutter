@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:general_insurance_management_system/page/data_store.dart';
 import 'package:general_insurance_management_system/page/home.dart';
 import 'package:general_insurance_management_system/page/registration.dart';
 import 'package:general_insurance_management_system/page/user_profile.dart';
@@ -9,6 +8,8 @@ import 'dart:ui'; // Necesario para ImageFilter.blur
 
 // Se mantiene como StatefulWidget para manejar el estado de _obscurePassword
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -19,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _obscurePassword = true;
 
-  final storage = new FlutterSecureStorage();
+  final storage = FlutterSecureStorage();
   AuthService authService = AuthService();
 
   @override
@@ -248,14 +249,6 @@ class _LoginPageState extends State<LoginPage> {
         onPressed: () {
           loginUser(context);
         },
-        child: Text(
-          "LOGIN",
-          style: TextStyle(
-            fontSize: 18.0,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.2,
-          ),
-        ),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent, // Transparente para mostrar el degradado
           shadowColor: Colors.transparent,
@@ -263,6 +256,14 @@ class _LoginPageState extends State<LoginPage> {
           padding: EdgeInsets.symmetric(vertical: 16.0),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30.0),
+          ),
+        ),
+        child: Text(
+          "LOGIN",
+          style: TextStyle(
+            fontSize: 18.0,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.2,
           ),
         ),
       ),

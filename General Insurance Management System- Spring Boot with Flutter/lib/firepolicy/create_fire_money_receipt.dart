@@ -10,7 +10,7 @@ import 'package:intl/intl.dart';
 
 
 class CreateFireMoneyReceipt extends StatefulWidget {
-  const CreateFireMoneyReceipt({Key? key}) : super(key: key);
+  const CreateFireMoneyReceipt({super.key});
 
   @override
   State<CreateFireMoneyReceipt> createState() => _CreateFireMoneyReceiptState();
@@ -253,7 +253,7 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
     }
 
     return DropdownButtonFormField<String>(
-      value: uniquePolicyholders.contains(selectedPolicyholder) ? selectedPolicyholder : null,
+      initialValue: uniquePolicyholders.contains(selectedPolicyholder) ? selectedPolicyholder : null,
       onChanged: isLoading ? null : (String? newValue) {
         setState(() {
           selectedPolicyholder = newValue;
@@ -291,7 +291,7 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
 
   Widget _buildDropdownBankNameField() {
     return DropdownButtonFormField<String>(
-      value: selectedBankName,
+      initialValue: selectedBankName,
       onChanged: isLoading
           ? null
           : (String? newValue) {
@@ -311,7 +311,7 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
 
   Widget _buildDropdownSumInsuredField() {
     return DropdownButtonFormField<double>(
-      value: selectedSumInsured,
+      initialValue: selectedSumInsured,
       onChanged: isLoading
           ? null
           : (double? newValue) {
@@ -366,7 +366,7 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
 
   Widget _buildClassOfInsuranceDropdown() {
     return DropdownButtonFormField<String>(
-      value: selectedClassOfInsurance,
+      initialValue: selectedClassOfInsurance,
       onChanged: (String? newValue) {
         setState(() {
           selectedClassOfInsurance = newValue;
@@ -387,7 +387,7 @@ class _CreateFireMoneyReceiptState extends State<CreateFireMoneyReceipt> {
 
   Widget _buildModeOfPaymentDropdown() {
     return DropdownButtonFormField<String>(
-      value: selectedModeOfPayment,
+      initialValue: selectedModeOfPayment,
       onChanged: (String? newValue) {
         setState(() {
           selectedModeOfPayment = newValue;

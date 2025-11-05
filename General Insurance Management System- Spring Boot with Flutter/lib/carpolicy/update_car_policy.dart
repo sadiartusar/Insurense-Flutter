@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/carpolicy/view_car_policy.dart';
-import 'package:general_insurance_management_system/firepolicy/view_firepolicy.dart';
 import 'package:general_insurance_management_system/model/carpolicy_model.dart';
 import 'package:general_insurance_management_system/model/firepolicy_model.dart';
 import 'package:general_insurance_management_system/service/carpolicy_service.dart';
-import 'package:general_insurance_management_system/service/firepolicy_service.dart';
 import 'package:intl/intl.dart';
 
 class UpdateCarPolicy extends StatefulWidget {
@@ -189,7 +187,7 @@ class _UpdateCarPolicyState extends State<UpdateCarPolicy> {
                     Icons.location_city, 'Please enter the location'),
                 SizedBox(height: 20),
                 DropdownButtonFormField<String>(
-                  value: selectedConstruction,
+                  initialValue: selectedConstruction,
                   decoration:
                   _buildInputDecoration('Construction Type', Icons.build),
                   items: constructionTypes.map((type) {
@@ -207,7 +205,7 @@ class _UpdateCarPolicyState extends State<UpdateCarPolicy> {
                 ),
                 SizedBox(height: 20),
                 DropdownButtonFormField<String>(
-                  value: selectedusedAs,
+                  initialValue: selectedusedAs,
                   decoration: _buildInputDecoration('Used As', Icons.business),
                   items: usageTypes.map((type) {
                     return DropdownMenuItem<String>(

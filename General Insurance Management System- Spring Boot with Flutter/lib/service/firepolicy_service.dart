@@ -42,7 +42,7 @@ class FirePolicyService {
     final String? token = prefs.getString('token'); // Adjust key based on your implementation
 
     final response = await http.post(
-      Uri.parse(baseUrl + "save"),
+      Uri.parse("${baseUrl}save"),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': token != null ? 'Bearer $token' : '', // Include token if available
@@ -59,7 +59,7 @@ class FirePolicyService {
 
   /// Deletes a fire policy by ID.
   Future<bool> deleteFirePolicy(int id) async {
-    final String apiUrl = '${baseUrl}/$id';
+    final String apiUrl = '$baseUrl/$id';
 
     try {
       final prefs = await SharedPreferences.getInstance();

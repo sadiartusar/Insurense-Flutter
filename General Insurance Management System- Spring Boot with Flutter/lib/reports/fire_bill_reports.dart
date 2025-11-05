@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:pie_chart/pie_chart.dart';
 
 class FireBillReportPage extends StatefulWidget {
+  const FireBillReportPage({super.key});
+
   @override
   State<FireBillReportPage> createState() => _FireBillReportPageState();
 }
@@ -24,8 +26,8 @@ class _FireBillReportPageState extends State<FireBillReportPage> {
   bool isLoading = true;
   bool isError = false;
 
-  double _shadowScale = 1.0;
-  double _buttonScale = 1.0;
+  final double _shadowScale = 1.0;
+  final double _buttonScale = 1.0;
 
   @override
   void initState() {

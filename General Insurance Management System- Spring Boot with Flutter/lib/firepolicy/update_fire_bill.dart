@@ -7,7 +7,7 @@ import 'package:general_insurance_management_system/service/firepolicy_service.d
 
 
 class UpdateFireBill extends StatefulWidget {
-  const UpdateFireBill({Key? key, required this.bill}) : super(key: key);
+  const UpdateFireBill({super.key, required this.bill});
 
   final FirebillModel bill;
 
@@ -254,7 +254,7 @@ class _UpdateFireBillState extends State<UpdateFireBill> {
 
   Widget _buildDropdownField() {
     return DropdownButtonFormField<String>(
-      value: selectedPolicyholder,
+      initialValue: selectedPolicyholder,
       onChanged: isLoading ? null : (String? newValue) {
         setState(() {
           selectedPolicyholder = newValue;
@@ -278,7 +278,7 @@ class _UpdateFireBillState extends State<UpdateFireBill> {
 
   Widget _buildDropdownBankNameField() {
     return DropdownButtonFormField<String>(
-      value: selectedBankName,
+      initialValue: selectedBankName,
       onChanged: isLoading ? null : (String? newValue) {
         setState(() {
           selectedBankName = newValue;
@@ -296,7 +296,7 @@ class _UpdateFireBillState extends State<UpdateFireBill> {
 
   Widget _buildDropdownSumInsuredField() {
     return DropdownButtonFormField<double>(
-      value: selectedSumInsured,
+      initialValue: selectedSumInsured,
       onChanged: isLoading ? null : (double? newValue) {
         setState(() {
           selectedSumInsured = newValue;

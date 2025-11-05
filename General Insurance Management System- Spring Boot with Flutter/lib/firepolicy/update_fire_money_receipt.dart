@@ -10,7 +10,7 @@ import 'package:intl/intl.dart';
 
 
 class UpdateFireMoneyReceipt extends StatefulWidget {
-  const UpdateFireMoneyReceipt({Key? key,required this.moneyreceipt}) : super(key: key);
+  const UpdateFireMoneyReceipt({super.key,required this.moneyreceipt});
 
   final FireMoneyReceiptModel moneyreceipt ;
 
@@ -239,7 +239,7 @@ class _UpdateFireMoneyReceiptState extends State<UpdateFireMoneyReceipt> {
 
   Widget _buildDropdownField() {
     return DropdownButtonFormField<String>(
-      value: selectedPolicyholder,
+      initialValue: selectedPolicyholder,
       onChanged: isLoading ? null : (String? newValue) {
         setState(() {
           selectedPolicyholder = newValue;
@@ -277,7 +277,7 @@ class _UpdateFireMoneyReceiptState extends State<UpdateFireMoneyReceipt> {
 
   Widget _buildDropdownBankNameField() {
     return DropdownButtonFormField<String>(
-      value: selectedBankName,
+      initialValue: selectedBankName,
       onChanged: isLoading
           ? null
           : (String? newValue) {
@@ -297,7 +297,7 @@ class _UpdateFireMoneyReceiptState extends State<UpdateFireMoneyReceipt> {
 
   Widget _buildDropdownSumInsuredField() {
     return DropdownButtonFormField<double>(
-      value: selectedSumInsured,
+      initialValue: selectedSumInsured,
       onChanged: isLoading
           ? null
           : (double? newValue) {
@@ -352,7 +352,7 @@ class _UpdateFireMoneyReceiptState extends State<UpdateFireMoneyReceipt> {
 
   Widget _buildClassOfInsuranceDropdown() {
     return DropdownButtonFormField<String>(
-      value: selectedClassOfInsurance,
+      initialValue: selectedClassOfInsurance,
       onChanged: (String? newValue) {
         setState(() {
           selectedClassOfInsurance = newValue;
@@ -373,7 +373,7 @@ class _UpdateFireMoneyReceiptState extends State<UpdateFireMoneyReceipt> {
 
   Widget _buildModeOfPaymentDropdown() {
     return DropdownButtonFormField<String>(
-      value: selectedModeOfPayment,
+      initialValue: selectedModeOfPayment,
       onChanged: (String? newValue) {
         setState(() {
           selectedModeOfPayment = newValue;

@@ -308,11 +308,7 @@ class AuthService {
 
   Future<String> fetchBalance(int userId) async {
     // আপনার টোকেন এখানে ইনজেক্ট করতে হবে
-    String? token = "আপনার_সেভ_করা_bearer_token"; // আপনার টোকেন দিন
-
-    if (token == null) {
-      return 'Token Error';
-    }
+    String? token = "আপনার_সেভ_করা_bearer_token";
 
     final url = Uri.parse('http://localhost:8085/api/payment/balance/$userId');
 

@@ -6,6 +6,8 @@ import 'package:pie_chart/pie_chart.dart';
 import 'package:intl/intl.dart';
 
 class FireMoneyReceiptReportPage extends StatefulWidget {
+  const FireMoneyReceiptReportPage({super.key});
+
   @override
   State<FireMoneyReceiptReportPage> createState() => _FireMoneyReceiptReportPageState();
 }

@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:pie_chart/pie_chart.dart';
 
 class CarBillReportPage extends StatefulWidget {
+  const CarBillReportPage({super.key});
+
   @override
   State<CarBillReportPage> createState() => _CarBillReportPageState();
 }
@@ -24,8 +26,8 @@ class _CarBillReportPageState extends State<CarBillReportPage> {
   bool isLoading = true;
   bool isError = false;
 
-  double _shadowScale = 1.0;
-  double _buttonScale = 1.0;
+  final double _shadowScale = 1.0;
+  final double _buttonScale = 1.0;
 
   @override
   void initState() {

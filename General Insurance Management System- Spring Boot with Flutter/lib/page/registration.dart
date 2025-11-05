@@ -222,6 +222,10 @@ class _RegistrationState extends State<Registration> {
                 ElevatedButton(onPressed:(){
 
                 },
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple,
+                      foregroundColor: Colors.white
+                  ),
                   child: Text(
                     "Registration",
                     style: TextStyle(
@@ -229,10 +233,6 @@ class _RegistrationState extends State<Registration> {
                         fontWeight: FontWeight.w800,
                         fontFamily: GoogleFonts.lato().fontFamily
                     ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
-                      foregroundColor: Colors.white
                   ),
                 ),
 

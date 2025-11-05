@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/carpolicy/all_car_policy_details.dart';
 import 'package:general_insurance_management_system/carpolicy/create_car_policy.dart';
 import 'package:general_insurance_management_system/carpolicy/update_car_policy.dart';
-import 'package:general_insurance_management_system/firepolicy/create_firepolicy.dart';
 import 'package:general_insurance_management_system/model/carpolicy_model.dart';
 import 'package:general_insurance_management_system/service/carpolicy_service.dart';
 
@@ -90,9 +89,7 @@ class _AllCarPolicyViewState extends State<AllCarPolicyView>
         final rawDate = policy.date; // <-- use your real field here
         if (rawDate == null) return false;
 
-        final policyDate = rawDate is DateTime
-            ? rawDate
-            : DateTime.tryParse(rawDate.toString()) ?? DateTime(1900);
+        final policyDate = rawDate;
 
         return policyDate.isAfter(startDate!) && policyDate.isBefore(endDate!);
       }).toList();

@@ -79,13 +79,13 @@ class AllFireBillDetails extends StatelessWidget {
             _buildDetailRow(
                 context, 'Fire Bill No:', '${bill.firePolicy.id ?? "N/A"}'),
             _buildDetailRow(
-                context, 'Issue Date:', '${formatDate(bill.firePolicy.date)}'),
+                context, 'Issue Date:', formatDate(bill.firePolicy.date)),
             _buildDetailRow(
-                context, 'Bank Name:', '${bill.firePolicy.bankName ?? "N/A"}'),
+                context, 'Bank Name:', bill.firePolicy.bankName ?? "N/A"),
             _buildDetailRow(context, 'Policyholder:',
-                '${bill.firePolicy.policyholder ?? "N/A"}'),
+                bill.firePolicy.policyholder ?? "N/A"),
             _buildDetailRow(
-                context, 'Address:', '${bill.firePolicy.address ?? "N/A"}'),
+                context, 'Address:', bill.firePolicy.address ?? "N/A"),
           ],
         ),
       ),
@@ -106,13 +106,13 @@ class AllFireBillDetails extends StatelessWidget {
             _buildDetailRow(context, 'Sum Insured:',
                 '${bill.firePolicy.sumInsured ?? "N/A"} TK'),
             _buildDetailRow(context, 'Interest Insured:',
-                '${bill.firePolicy.interestInsured ?? "N/A"}'),
+                bill.firePolicy.interestInsured ?? "N/A"),
             _buildDetailRow(
-                context, 'Coverage:', '${bill.firePolicy.coverage ?? "N/A"}'),
+                context, 'Coverage:', bill.firePolicy.coverage ?? "N/A"),
             _buildDetailRow(
-                context, 'Location:', '${bill.firePolicy.location ?? "N/A"}'),
+                context, 'Location:', bill.firePolicy.location ?? "N/A"),
             _buildDetailRow(context, 'Construction:',
-                '${bill.firePolicy.construction ?? "N/A"}'),
+                bill.firePolicy.construction ?? "N/A"),
             _buildDetailRow(context, 'Period:',
                 '${formatDate(bill.firePolicy.periodFrom)} to ${formatDate(bill.firePolicy.periodTo)}'),
           ],
@@ -348,7 +348,7 @@ class AllFireBillDetails extends StatelessWidget {
               'Fire Bill No',
               '${bill.firePolicy.id ?? "N/A"}',
               'Issue Date',
-              '${formatDate(bill.firePolicy.date)}'
+              (formatDate(bill.firePolicy.date))
             ],
           ],
         ),
@@ -363,9 +363,9 @@ class AllFireBillDetails extends StatelessWidget {
         pw.Text("Insured Details", style: _headerTextStyle()),
         pw.Table.fromTextArray(
           data: [
-            ['Bank Name', '${bill.firePolicy.bankName ?? "N/A"}'],
-            ['Policyholder', '${bill.firePolicy.policyholder ?? "N/A"}'],
-            ['Address', '${bill.firePolicy.address ?? "N/A"}'],
+            ['Bank Name', (bill.firePolicy.bankName ?? "N/A")],
+            ['Policyholder', (bill.firePolicy.policyholder ?? "N/A")],
+            ['Address', (bill.firePolicy.address ?? "N/A")],
           ],
         ),
       ],
@@ -379,7 +379,7 @@ class AllFireBillDetails extends StatelessWidget {
         pw.Text("Segregation of The Sum Insured", style: _headerTextStyle()),
         pw.Table.fromTextArray(
           data: [
-            ['Stock Insured', '${bill.firePolicy.stockInsured ?? "N/A"}'],
+            ['Stock Insured', (bill.firePolicy.stockInsured ?? "N/A")],
             ['Sum Insured', 'TK. ${bill.firePolicy.sumInsured ?? "N/A"}'],
           ],
         ),
@@ -394,14 +394,14 @@ class AllFireBillDetails extends StatelessWidget {
         pw.Text("Situation", style: _headerTextStyle()),
         pw.Table.fromTextArray(
           data: [
-            ['Interest Insured', '${bill.firePolicy.interestInsured ?? "N/A"}'],
-            ['Coverage', '${bill.firePolicy.coverage ?? "N/A"}'],
-            ['Location', '${bill.firePolicy.location ?? "N/A"}'],
-            ['Construction', '${bill.firePolicy.construction ?? "N/A"}'],
-            ['Owner', '${bill.firePolicy.owner ?? "N/A"}'],
-            ['Used As', '${bill.firePolicy.usedAs ?? "N/A"}'],
-            ['Period From', '${formatDate(bill.firePolicy.periodFrom)}'],
-            ['Period To', '${formatDate(bill.firePolicy.periodTo)}'],
+            ['Interest Insured', (bill.firePolicy.interestInsured ?? "N/A")],
+            ['Coverage', (bill.firePolicy.coverage ?? "N/A")],
+            ['Location', (bill.firePolicy.location ?? "N/A")],
+            ['Construction', (bill.firePolicy.construction ?? "N/A")],
+            ['Owner', (bill.firePolicy.owner ?? "N/A")],
+            ['Used As', (bill.firePolicy.usedAs ?? "N/A")],
+            ['Period From', (formatDate(bill.firePolicy.periodFrom))],
+            ['Period To', (formatDate(bill.firePolicy.periodTo))],
           ],
         ),
       ],
@@ -420,31 +420,31 @@ class AllFireBillDetails extends StatelessWidget {
               'Fire Rate',
               '${bill.fire ?? 0}% on ${bill.firePolicy.sumInsured ?? "N/A"}',
               'TK',
-              '${getTotalFire().toStringAsFixed(2)}'
+              (getTotalFire().toStringAsFixed(2))
             ],
             [
               'Rsd Rate',
               '${bill.rsd ?? 0}% on ${bill.firePolicy.sumInsured ?? "N/A"}',
               'TK',
-              '${getTotalRsd().toStringAsFixed(2)}'
+              (getTotalRsd().toStringAsFixed(2))
             ],
             [
               'Net Premium (Fire + RSD)',
               '',
               'TK',
-              '${getTotalPremium().toStringAsFixed(2)}'
+              (getTotalPremium().toStringAsFixed(2))
             ],
             [
               'Tax on Net Premium',
               '${bill.tax ?? 0}% on ${getTotalPremium().toStringAsFixed(2)}',
               'TK',
-              '${getTotalTax().toStringAsFixed(2)}'
+              (getTotalTax().toStringAsFixed(2))
             ],
             [
               'Gross Premium with Tax',
               '',
               'TK',
-              '${getTotalPremiumWithTax().toStringAsFixed(2)}'
+              (getTotalPremiumWithTax().toStringAsFixed(2))
             ],
           ],
         ),

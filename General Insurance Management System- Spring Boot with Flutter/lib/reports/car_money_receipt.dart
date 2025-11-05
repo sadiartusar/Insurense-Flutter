@@ -5,6 +5,8 @@ import 'package:pie_chart/pie_chart.dart';
 import 'package:intl/intl.dart';
 
 class CarMoneyReceiptReportPage extends StatefulWidget {
+  const CarMoneyReceiptReportPage({super.key});
+
   @override
   State<CarMoneyReceiptReportPage> createState() => _CarMoneyReceiptReportPageState();
 }

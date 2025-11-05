@@ -3,7 +3,7 @@ import 'package:general_insurance_management_system/page/logout.dart';
 import 'package:general_insurance_management_system/service/auth_service.dart';
 
 class HeadOffice extends StatefulWidget {
-  const HeadOffice({Key? key}) : super(key: key);
+  const HeadOffice({super.key});
 
   @override
   State<HeadOffice> createState() => _HeadOfficeState();
@@ -149,12 +149,12 @@ class ActionCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const ActionCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.icon,
     required this.color,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

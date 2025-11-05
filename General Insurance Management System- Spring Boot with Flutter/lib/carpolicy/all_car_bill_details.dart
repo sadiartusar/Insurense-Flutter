@@ -79,13 +79,13 @@ class AllCarBillDetails extends StatelessWidget {
             _buildDetailRow(
                 context, 'Fire Bill No:', '${bill.carPolicy.id ?? "N/A"}'),
             _buildDetailRow(
-                context, 'Issue Date:', '${formatDate(bill.carPolicy.date)}'),
+                context, 'Issue Date:', formatDate(bill.carPolicy.date)),
             _buildDetailRow(
-                context, 'Bank Name:', '${bill.carPolicy.bankName ?? "N/A"}'),
+                context, 'Bank Name:', bill.carPolicy.bankName ?? "N/A"),
             _buildDetailRow(context, 'Policyholder:',
-                '${bill.carPolicy.policyholder ?? "N/A"}'),
+                bill.carPolicy.policyholder ?? "N/A"),
             _buildDetailRow(
-                context, 'Address:', '${bill.carPolicy.address ?? "N/A"}'),
+                context, 'Address:', bill.carPolicy.address ?? "N/A"),
           ],
         ),
       ),
@@ -106,13 +106,13 @@ class AllCarBillDetails extends StatelessWidget {
             _buildDetailRow(context, 'Sum Insured:',
                 '${bill.carPolicy.sumInsured ?? "N/A"} TK'),
             _buildDetailRow(context, 'Interest Insured:',
-                '${bill.carPolicy.interestInsured ?? "N/A"}'),
+                bill.carPolicy.interestInsured ?? "N/A"),
             _buildDetailRow(
-                context, 'Coverage:', '${bill.carPolicy.coverage ?? "N/A"}'),
+                context, 'Coverage:', bill.carPolicy.coverage ?? "N/A"),
             _buildDetailRow(
-                context, 'Location:', '${bill.carPolicy.location ?? "N/A"}'),
+                context, 'Location:', bill.carPolicy.location ?? "N/A"),
             _buildDetailRow(context, 'Construction:',
-                '${bill.carPolicy.construction ?? "N/A"}'),
+                bill.carPolicy.construction ?? "N/A"),
             _buildDetailRow(context, 'Period:',
                 '${formatDate(bill.carPolicy.periodFrom)} to ${formatDate(bill.carPolicy.periodTo)}'),
           ],
@@ -344,7 +344,7 @@ class AllCarBillDetails extends StatelessWidget {
               'Car Bill No',
               '${bill.carPolicy.id ?? "N/A"}',
               'Issue Date',
-              '${formatDate(bill.carPolicy.date)}'
+              (formatDate(bill.carPolicy.date))
             ],
           ],
         ),
@@ -359,9 +359,9 @@ class AllCarBillDetails extends StatelessWidget {
         pw.Text("Insured Details", style: _headerTextStyle()),
         pw.Table.fromTextArray(
           data: [
-            ['Bank Name', '${bill.carPolicy.bankName ?? "N/A"}'],
-            ['Policyholder', '${bill.carPolicy.policyholder ?? "N/A"}'],
-            ['Address', '${bill.carPolicy.address ?? "N/A"}'],
+            ['Bank Name', (bill.carPolicy.bankName ?? "N/A")],
+            ['Policyholder', (bill.carPolicy.policyholder ?? "N/A")],
+            ['Address', (bill.carPolicy.address ?? "N/A")],
           ],
         ),
       ],
@@ -375,7 +375,7 @@ class AllCarBillDetails extends StatelessWidget {
         pw.Text("Segregation of The Sum Insured", style: _headerTextStyle()),
         pw.Table.fromTextArray(
           data: [
-            ['Stock Insured', '${bill.carPolicy.stockInsured ?? "N/A"}'],
+            ['Stock Insured', (bill.carPolicy.stockInsured ?? "N/A")],
             ['Sum Insured', 'TK. ${bill.carPolicy.sumInsured ?? "N/A"}'],
           ],
         ),
@@ -390,14 +390,14 @@ class AllCarBillDetails extends StatelessWidget {
         pw.Text("Situation", style: _headerTextStyle()),
         pw.Table.fromTextArray(
           data: [
-            ['Interest Insured', '${bill.carPolicy.interestInsured ?? "N/A"}'],
-            ['Coverage', '${bill.carPolicy.coverage ?? "N/A"}'],
-            ['Location', '${bill.carPolicy.location ?? "N/A"}'],
-            ['Construction', '${bill.carPolicy.construction ?? "N/A"}'],
-            ['Owner', '${bill.carPolicy.owner ?? "N/A"}'],
-            ['Used As', '${bill.carPolicy.usedAs ?? "N/A"}'],
-            ['Period From', '${formatDate(bill.carPolicy.periodFrom)}'],
-            ['Period To', '${formatDate(bill.carPolicy.periodTo)}'],
+            ['Interest Insured', (bill.carPolicy.interestInsured ?? "N/A")],
+            ['Coverage', (bill.carPolicy.coverage ?? "N/A")],
+            ['Location', (bill.carPolicy.location ?? "N/A")],
+            ['Construction', (bill.carPolicy.construction ?? "N/A")],
+            ['Owner', (bill.carPolicy.owner ?? "N/A")],
+            ['Used As', (bill.carPolicy.usedAs ?? "N/A")],
+            ['Period From', (formatDate(bill.carPolicy.periodFrom))],
+            ['Period To', (formatDate(bill.carPolicy.periodTo))],
           ],
         ),
       ],
@@ -416,31 +416,31 @@ class AllCarBillDetails extends StatelessWidget {
               'Car Rate',
               '${bill.carRate ?? 0}% on ${bill.carPolicy.sumInsured ?? "N/A"}',
               'TK',
-              '${getTotalCarRate().toStringAsFixed(2)}'
+              (getTotalCarRate().toStringAsFixed(2))
             ],
             [
               'Rsd Rate',
               '${bill.rsd ?? 0}% on ${bill.carPolicy.sumInsured ?? "N/A"}',
               'TK',
-              '${getTotalRsd().toStringAsFixed(2)}'
+              (getTotalRsd().toStringAsFixed(2))
             ],
             [
               'Net Premium (Fire + RSD)',
               '',
               'TK',
-              '${getTotalPremium().toStringAsFixed(2)}'
+              (getTotalPremium().toStringAsFixed(2))
             ],
             [
               'Tax on Net Premium',
               '${bill.tax ?? 0}% on ${getTotalPremium().toStringAsFixed(2)}',
               'TK',
-              '${getTotalTax().toStringAsFixed(2)}'
+              (getTotalTax().toStringAsFixed(2))
             ],
             [
               'Gross Premium with Tax',
               '',
               'TK',
-              '${getTotalPremiumWithTax().toStringAsFixed(2)}'
+              (getTotalPremiumWithTax().toStringAsFixed(2))
             ],
           ],
         ),

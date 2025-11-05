@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/firepolicy/all_fire_bill_list_view.dart';
-import 'package:general_insurance_management_system/firepolicy/view_fire_bill.dart';
 import 'package:general_insurance_management_system/model/firebill_model.dart';
 import 'package:general_insurance_management_system/model/firepolicy_model.dart';
 import 'package:general_insurance_management_system/service/firebill_service.dart';
@@ -201,7 +200,7 @@ class _CreateFireBillState extends State<CreateFireBill> {
     }.whereType<String>().toList();
 
     return DropdownButtonFormField<String>(
-      value: uniquePolicyholders.contains(selectedPolicyholder) ? selectedPolicyholder : null,
+      initialValue: uniquePolicyholders.contains(selectedPolicyholder) ? selectedPolicyholder : null,
       onChanged: (val) {
         setState(() {
           selectedPolicyholder = val;
@@ -219,14 +218,14 @@ class _CreateFireBillState extends State<CreateFireBill> {
   }
 
   Widget _buildDropdownBankNameField() => DropdownButtonFormField<String>(
-    value: selectedBankName,
+    initialValue: selectedBankName,
     onChanged: (val) => setState(() => selectedBankName = val),
     items: uniqueBankNames.map((b) => DropdownMenuItem(value: b, child: Text(b))).toList(),
     decoration: const InputDecoration(labelText: 'Bank Name'),
   );
 
   Widget _buildDropdownSumInsuredField() => DropdownButtonFormField<double>(
-    value: selectedSumInsured,
+    initialValue: selectedSumInsured,
     onChanged: (val) => setState(() => selectedSumInsured = val),
     items: uniqueSumInsured.map((s) => DropdownMenuItem(value: s, child: Text(s.toString()))).toList(),
     decoration: const InputDecoration(labelText: 'Sum Insured'),

@@ -88,9 +88,7 @@ class _AllFirePolicyViewState extends State<AllFirePolicyView>
         final rawDate = policy.date; // <-- use your real field here
         if (rawDate == null) return false;
 
-        final policyDate = rawDate is DateTime
-            ? rawDate
-            : DateTime.tryParse(rawDate.toString()) ?? DateTime(1900);
+        final policyDate = rawDate;
 
         return policyDate.isAfter(startDate!) && policyDate.isBefore(endDate!);
       }).toList();

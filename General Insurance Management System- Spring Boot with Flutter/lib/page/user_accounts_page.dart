@@ -17,7 +17,7 @@ class _UserAccountsPageState extends State<UserAccountsPage> {
 
   final PaymentService _service = PaymentService();
 
-  List<Payment> _payments = [];
+  final List<Payment> _payments = [];
   double? _balance;
   bool _loading = false;
   // নতুন স্টেট: বর্তমানে কোন অ্যাকশনটি লোড হচ্ছে তা বোঝানোর জন্য

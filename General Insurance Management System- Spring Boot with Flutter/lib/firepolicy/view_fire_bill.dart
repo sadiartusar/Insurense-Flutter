@@ -6,7 +6,7 @@ import 'package:general_insurance_management_system/model/firebill_model.dart';
 import 'package:general_insurance_management_system/service/firebill_service.dart';
 
 class AllFireBillView extends StatefulWidget {
-  const AllFireBillView({Key? key}) : super(key: key);
+  const AllFireBillView({super.key});
 
   @override
   State<AllFireBillView> createState() => _AllFireBillViewState();

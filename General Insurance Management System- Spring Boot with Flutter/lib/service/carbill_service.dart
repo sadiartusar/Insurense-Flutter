@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:general_insurance_management_system/model/carbill_model.dart';
-import 'package:general_insurance_management_system/model/firebill_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 

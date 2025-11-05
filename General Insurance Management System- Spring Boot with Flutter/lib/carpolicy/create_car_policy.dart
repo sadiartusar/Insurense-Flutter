@@ -1,13 +1,9 @@
 import 'dart:convert';
 
-import 'package:date_field/date_field.dart';
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/carpolicy/view_car_policy.dart';
-import 'package:general_insurance_management_system/firepolicy/view_firepolicy.dart';
 import 'package:general_insurance_management_system/model/carpolicy_model.dart';
-import 'package:general_insurance_management_system/model/firepolicy_model.dart';
 import 'package:general_insurance_management_system/service/carpolicy_service.dart';
-import 'package:general_insurance_management_system/service/firepolicy_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -185,7 +181,7 @@ class _CreateCarPolicyState extends State<CreateCarPolicy> {
                 const SizedBox(height: 20),
                 // Construction Type Dropdown
                 DropdownButtonFormField<String>(
-                  value: selectedConstruction,
+                  initialValue: selectedConstruction,
                   decoration: _buildInputDecoration('Construction Type', Icons.build),
                   items: constructionTypes.map((type) {
                     return DropdownMenuItem<String>(
@@ -208,7 +204,7 @@ class _CreateCarPolicyState extends State<CreateCarPolicy> {
                 const SizedBox(height: 20),
                 // Used As Dropdown
                 DropdownButtonFormField<String>(
-                  value: selectedUsage,
+                  initialValue: selectedUsage,
                   decoration: _buildInputDecoration('Used As', Icons.business),
                   items: usageTypes.map((type) {
                     return DropdownMenuItem<String>(

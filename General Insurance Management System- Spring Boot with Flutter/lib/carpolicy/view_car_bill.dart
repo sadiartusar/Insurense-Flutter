@@ -7,7 +7,7 @@ import 'package:general_insurance_management_system/service/carbill_service.dart
 
 
 class AllCarBillView extends StatefulWidget {
-  const AllCarBillView({Key? key}) : super(key: key);
+  const AllCarBillView({super.key});
 
   @override
   State<AllCarBillView> createState() => _AllCarBillViewState();

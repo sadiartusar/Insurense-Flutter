@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:general_insurance_management_system/page/accounts_details.dart';
-import 'package:general_insurance_management_system/page/data_store.dart';
 import 'package:general_insurance_management_system/page/login.dart';
 import 'package:general_insurance_management_system/page/money_receipt_for_user.dart'; // assuming this holds UserCoverNotesPage
 import 'package:general_insurance_management_system/page/user_accounts_page.dart';

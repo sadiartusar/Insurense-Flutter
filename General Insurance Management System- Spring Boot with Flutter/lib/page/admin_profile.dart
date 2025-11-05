@@ -8,7 +8,7 @@ class AdminProfile extends StatelessWidget {
   final AuthService _authService = AuthService();
 
 
-  AdminProfile({Key? key, required this.profile}) : super(key: key);
+  AdminProfile({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {

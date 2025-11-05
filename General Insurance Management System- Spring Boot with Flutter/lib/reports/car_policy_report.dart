@@ -4,6 +4,8 @@ import 'package:general_insurance_management_system/service/carpolicy_service.da
 import 'package:intl/intl.dart';
 
 class CarPolicyReportPage extends StatefulWidget {
+  const CarPolicyReportPage({super.key});
+
   @override
   State<CarPolicyReportPage> createState() => _CarPolicyReportPageState();
 }

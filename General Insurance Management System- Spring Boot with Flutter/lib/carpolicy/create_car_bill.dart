@@ -200,7 +200,7 @@ class _CreateCarBillState extends State<CreateCarBill> {
     }.whereType<String>().toList();
 
     return DropdownButtonFormField<String>(
-      value: uniquePolicyholders.contains(selectedPolicyholder) ? selectedPolicyholder : null,
+      initialValue: uniquePolicyholders.contains(selectedPolicyholder) ? selectedPolicyholder : null,
       onChanged: (val) {
         setState(() {
           selectedPolicyholder = val;
@@ -218,14 +218,14 @@ class _CreateCarBillState extends State<CreateCarBill> {
   }
 
   Widget _buildDropdownBankNameField() => DropdownButtonFormField<String>(
-    value: selectedBankName,
+    initialValue: selectedBankName,
     onChanged: (val) => setState(() => selectedBankName = val),
     items: uniqueBankNames.map((b) => DropdownMenuItem(value: b, child: Text(b))).toList(),
     decoration: const InputDecoration(labelText: 'Bank Name'),
   );
 
   Widget _buildDropdownSumInsuredField() => DropdownButtonFormField<double>(
-    value: selectedSumInsured,
+    initialValue: selectedSumInsured,
     onChanged: (val) => setState(() => selectedSumInsured = val),
     items: uniqueSumInsured.map((s) => DropdownMenuItem(value: s, child: Text(s.toString()))).toList(),
     decoration: const InputDecoration(labelText: 'Sum Insured'),

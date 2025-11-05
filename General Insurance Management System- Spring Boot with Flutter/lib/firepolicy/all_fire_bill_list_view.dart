@@ -129,7 +129,7 @@ class _AllFireBillListViewState extends State<AllFireBillListView> {
               vertical: _rSize(context, 8),
             ),
             title: Text(
-              bill.firePolicy?.policyholder ?? 'No Name',
+              bill.firePolicy.policyholder ?? 'No Name',
               style: TextStyle(
                 fontSize: _rSize(context, 16),
                 fontWeight: FontWeight.w600, // টাইটেলকে সামান্য বোল্ড করা হলো

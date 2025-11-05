@@ -8,7 +8,7 @@ import 'package:general_insurance_management_system/service/carpolicy_service.da
 
 
 class UpdateCarBill extends StatefulWidget {
-  const UpdateCarBill({Key? key, required this.bill}) : super(key: key);
+  const UpdateCarBill({super.key, required this.bill});
 
   final CarBillModel bill;
 
@@ -255,7 +255,7 @@ class _UpdateCarBillState extends State<UpdateCarBill> {
 
   Widget _buildDropdownField() {
     return DropdownButtonFormField<String>(
-      value: selectedPolicyholder,
+      initialValue: selectedPolicyholder,
       onChanged: isLoading ? null : (String? newValue) {
         setState(() {
           selectedPolicyholder = newValue;
@@ -279,7 +279,7 @@ class _UpdateCarBillState extends State<UpdateCarBill> {
 
   Widget _buildDropdownBankNameField() {
     return DropdownButtonFormField<String>(
-      value: selectedBankName,
+      initialValue: selectedBankName,
       onChanged: isLoading ? null : (String? newValue) {
         setState(() {
           selectedBankName = newValue;
@@ -297,7 +297,7 @@ class _UpdateCarBillState extends State<UpdateCarBill> {
 
   Widget _buildDropdownSumInsuredField() {
     return DropdownButtonFormField<double>(
-      value: selectedSumInsured,
+      initialValue: selectedSumInsured,
       onChanged: isLoading ? null : (double? newValue) {
         setState(() {
           selectedSumInsured = newValue;

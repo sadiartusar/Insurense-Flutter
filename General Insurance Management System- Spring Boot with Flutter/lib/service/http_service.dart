@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:general_insurance_management_system/service/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HttpService {

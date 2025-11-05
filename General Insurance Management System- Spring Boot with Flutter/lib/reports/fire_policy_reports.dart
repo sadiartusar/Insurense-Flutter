@@ -4,6 +4,8 @@ import 'package:general_insurance_management_system/service/firepolicy_service.d
 import 'package:intl/intl.dart';
 
 class FirePolicyReportPage extends StatefulWidget {
+  const FirePolicyReportPage({super.key});
+
   @override
   State<FirePolicyReportPage> createState() => _FirePolicyReportPageState();
 }

@@ -130,7 +130,7 @@ class _AllCarBillListViewState extends State<AllCarBillListView> {
               vertical: _rSize(context, 8),
             ),
             title: Text(
-              bill.carPolicy?.policyholder ?? 'No Name',
+              bill.carPolicy.policyholder ?? 'No Name',
               style: TextStyle(
                 fontSize: _rSize(context, 16),
                 fontWeight: FontWeight.w600,
